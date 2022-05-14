@@ -8,14 +8,16 @@ def get_all_openapi_data():
     """
     result = list()
     for data_api_key in SEOUL_DATA_API_KEYS.values():
-        start, limit = 0, 20
-        while True:
-            res = get_openapi_seoul_data(data_api_key, start, start + limit)
-            if not res.get("data"):
-                break
-            result.append(res)
-            start += limit
+        try:
+            start, limit = 0, 20
+            while True:
+                res = get_openapi_seoul_data(data_api_key, start, start + limit)
+                if not res.get("data"):
+                    break
+                result.append(res)
+                print(res)
+                start += limit
+        except Exception as e:
+            print(e)  # 원래는 logger로 써야 하는데
+            continue
     return res
-
-
-get_all_openapi_data()

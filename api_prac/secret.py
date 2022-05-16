@@ -1,0 +1,6 @@
+DATA_SEOUL_API_KEY = "41514341767265643534646b6f634c"  # 22.05.13
+
+# 일반 인증키(Encoding)
+DATA_GO_KR_EN = "goDElEv6gwXdZXibMpPYUHbm9fghO9emaUEGhx4Lu1Ycxj1t0liUCjYL97T9UtnS4qnfo8VkNOdbN94vO7Ce0g%3D%3D"
+# 일반 인증키(Decoding )
+DATA_GO_KR_DE = "goDElEv6gwXdZXibMpPYUHbm9fghO9emaUEGhx4Lu1Ycxj1t0liUCjYL97T9UtnS4qnfo8VkNOdbN94vO7Ce0g=="

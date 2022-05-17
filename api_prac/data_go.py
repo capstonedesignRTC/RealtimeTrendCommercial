@@ -1,7 +1,7 @@
 import requests
 
-from data_go import DATA_GO_KR_API_KEYS
 from secret import DATA_GO_KR_DE, DATA_GO_KR_EN
+from utils import DATA_GO_KR_API_KEYS
 
 DATA_GOV_URL = "https://api.odcloud.kr/api/{}"
 
@@ -30,3 +30,6 @@ def get_odcloud_gov_data(service, page, size, type="json", sub_params={}):
     result = data.get("data", [])
 
     return {"count": total_count, "data": result}
+
+
+ㅇㄷㄹ

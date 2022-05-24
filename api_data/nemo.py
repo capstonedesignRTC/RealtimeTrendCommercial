@@ -1,3 +1,5 @@
+import logging
+
 import requests
 
 response = requests.get("https://www.nemoapp.kr/api/region/submunicipalities/{}")
@@ -25,17 +27,22 @@ def get_nemo_api(municipality_code):
     for submunicipality_info in submunicipality_infos:
         code = submunicipality_info.get("code")
         center = submunicipality_info.get("center")
+
         page_idx = 0
         while True:
             res = get_product(code, center["longitude"], center["latitude"], page_idx)
+
             if not res.get("data", []):
                 break
 
             yield res
+
+            if page_idx == 5:
+                break
             page_idx += 1
 
 
-def get_product(region, lng, lat, page=0, zoom=15):  # 126  # 37
+def get_product(region, lng, lat, page=0, zoom=15):
     """
     매물 정보를 가져오는 함수
     """
@@ -128,11 +135,14 @@ def get_product(region, lng, lat, page=0, zoom=15):  # 126  # 37
         "NELat": lat + 1,
         "Zoom": zoom,
     }
+    try:
+        res = requests.get("https://www.nemoapp.kr/api/articles/search/", params=params, headers=headers)
+        if res.status_code != 200:
+            raise Exception(f"[{res.status_code}] api requests fails")
 
-    res = requests.get("https://www.nemoapp.kr/api/articles/search/", params=params, headers=headers)
-    if res.status_code != 200:
-        raise Exception(f"[{res.status_code}] api requests fails")
+        raw_data = res.json()
+        data = raw_data.get("items", [])
 
-    raw_data = res.json()
-    data = raw_data.get("items", [])
+    except Exception as e:
+        logging.error(e.__str__())
     return {"region": region, "data": data}

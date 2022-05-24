@@ -8,7 +8,7 @@ def get_submunicipality_code(municipality_code):
     법정동 코드로 행정동 코드 가져오는 함수
     `SEOUL_MUNICIPALITY_CODE` 변수에 정리 완료
     """
-    res = requests.get(f"https://www.nemoapp.kr/api/region/submunicipalities/{b_dong_code}")
+    res = requests.get(f"https://www.nemoapp.kr/api/region/submunicipalities/{municipality_code}")
     if res.status_code != 200:
         raise Exception(f"[{res.status_code}] api requests fails")
 
@@ -20,7 +20,22 @@ def get_submunicipality_code(municipality_code):
     return b_dong_list
 
 
-def get_product(lng, lat, page=0, zoom=15):  # 126  # 37
+def get_nemo_api(municipality_code):
+    submunicipality_infos = get_submunicipality_code(municipality_code)
+    for submunicipality_info in submunicipality_infos:
+        code = submunicipality_info.get("code")
+        center = submunicipality_info.get("center")
+        page_idx = 0
+        while True:
+            res = get_product(code, center["longitude"], center["latitude"], page_idx)
+            if not res.get("data", []):
+                break
+
+            yield res
+            page_idx += 1
+
+
+def get_product(region, lng, lat, page=0, zoom=15):  # 126  # 37
     """
     매물 정보를 가져오는 함수
     """
@@ -30,15 +45,12 @@ def get_product(lng, lat, page=0, zoom=15):  # 126  # 37
         "accept-language": "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7",
         "dnt": "1",
         "referer": "https://www.nemoapp.kr/Search?ArticleType=1&PageIndex=0&SWLng=126.97309390890551&SWLat=37.47424501269658&NELng=127.02601325584673&NELat=37.50761852998374&Zoom=15&mode=1&category=1&list=true&articleId=&dataType=",
-        # 'request-context': 'appId=cid-v1:1a712dbb-d192-463e-b00b-18b83a52bb78',
-        # 'request-id': '|ef7e599764504c8a9015095b37f24602.d948577b90b14056',
         "sec-ch-ua": '" Not A;Brand";v="99", "Chromium";v="101", "Google Chrome";v="101"',
         "sec-ch-ua-mobile": "?0",
         "sec-ch-ua-platform": '"Windows"',
         "sec-fetch-dest": "empty",
         "sec-fetch-mode": "cors",
         "sec-fetch-site": "same-origin",
-        # 'traceparent': '00-ef7e599764504c8a9015095b37f24602-d948577b90b14056-01',
         "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.64 Safari/537.36",
         "x-requested-with": "XMLHttpRequest",
     }
@@ -93,7 +105,7 @@ def get_product(lng, lat, page=0, zoom=15):  # 126  # 37
         "AgentId": "",
         "UserId": "",
         "PageIndex": page,
-        "Region": "",
+        "Region": region,
         "Subway": "",
         "StoreTrade": "",
         "CompletedOnly": "",
@@ -122,4 +134,5 @@ def get_product(lng, lat, page=0, zoom=15):  # 126  # 37
         raise Exception(f"[{res.status_code}] api requests fails")
 
     raw_data = res.json()
-    return {"next": raw_data["hasNextPage"], "data": raw_data["items"]}
+    data = raw_data.get("items", [])
+    return {"region": region, "data": data}

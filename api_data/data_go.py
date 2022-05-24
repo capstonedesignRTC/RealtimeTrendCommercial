@@ -30,6 +30,3 @@ def get_odcloud_gov_data(service, page, size, type="json", sub_params={}):
     result = data.get("data", [])
 
     return {"count": total_count, "data": result}
-
-
-ㅇㄷㄹ

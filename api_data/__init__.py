@@ -1,6 +1,6 @@
-from api_data.nemo import get_nemo_api, get_submunicipality_code
-from api_data.seoul_api import get_all_seoul_data
-from api_data.utils import DATA_GO_KR_API_KEYS, SEOUL_DATA_API_KEYS, SEOUL_MUNICIPALITY_CODE
+from nemo import get_nemo_api
+from seoul_api import get_all_seoul_data
+from utils import SEOUL_DATA_API_KEYS, SEOUL_MUNICIPALITY_CODE
 
 if __name__ == "__main__":
     """
@@ -19,8 +19,8 @@ if __name__ == "__main__":
     네모 데이터
     - 매물 정보 crawling
     """
-    # for municipality_code in SEOUL_MUNICIPALITY_CODE.values():
-    #     for data in get_nemo_api(municipality_code):
-    #         result = {"key": municipality_code, **data}
-    #
-    #         # 여기에 producer  연결하는 코드 작성
+    for municipality_code in SEOUL_MUNICIPALITY_CODE.values():
+        for data in get_nemo_api(municipality_code):
+            result = {"key": municipality_code, **data}
+            # print(result)
+            # 여기에 producer  연결하는 코드 작성

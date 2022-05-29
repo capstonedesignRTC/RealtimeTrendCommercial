@@ -1,5 +1,6 @@
-api_data/secret.py
-
+api_data
+spark/my_secret.py
+test_three.csv
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

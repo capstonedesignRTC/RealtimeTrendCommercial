@@ -1,7 +1,5 @@
 import pandas as pd
-from pyspark.sql import SparkSession
 from pyspark.sql.functions import col
-from this import d
 
 
 def seoul_one(df_spark) -> pd.DataFrame():

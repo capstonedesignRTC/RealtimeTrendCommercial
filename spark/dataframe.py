@@ -241,17 +241,15 @@ class DF(object):
         df_data.createOrReplaceTempView("df")
 
         # df_data = df_data.filter(df_data.STDR_YY_CD == year)
-        
+
         res = dict()
 
         new_df = df_data.select(col("TRDAR_CD"), col("TOT_FLPOP_CO"))
-        
-        for row in df_data.sort(new_df.TOT_FLPOP_CO.desc()).collect() : 
-            
-            
+
+        for row in df_data.sort(new_df.TOT_FLPOP_CO.desc()).collect():
+            pass
 
         self.spark.spark.catalog.dropTempView("df")
-
 
     def seoul_four(self, df_spark: DataFrame) -> DataFrame:
         # https://data.seoul.go.kr/dataList/OA-15570/S/1/datasetVieeew.do

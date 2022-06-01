@@ -2,8 +2,7 @@ api_data
 spark/utils/my_secret.py
 spark/utils/*.csv
 
-
-
+spark/.vscode
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

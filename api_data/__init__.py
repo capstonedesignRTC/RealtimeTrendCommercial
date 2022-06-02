@@ -1,6 +1,22 @@
 from nemo import get_nemo_api
 from seoul_api import get_all_seoul_data
 from utils import SEOUL_DATA_API_KEYS, SEOUL_MUNICIPALITY_CODE
+import json
+import time
+
+def json_serializer(data):
+    return json.dumps(data).encode("utf-8")
+
+def get_partition(key, all, available):
+    return 0
+
+bootstrap_servers = ['localhost:9091','localhost:9092','localhost:9093']
+topicName='practice'
+
+producer = KafkaProducer(acks=0,
+                         bootstrap_servers=bootstrap_servers,
+                         value_serializer=json_serializer
+                         )
 
 if __name__ == "__main__":
     """
@@ -12,7 +28,10 @@ if __name__ == "__main__":
                 result = {"key": key, **data}
                 if "year" not in result:
                     result.update({"year": year})
-
+                # print(result)
+                # 여기에 producer  연결하는 코드 작성
+                producer.send(topicName, result)
+                time.sleep(2)
                 # 여기에 producer  연결하는 코드 작성
 
     """
@@ -24,3 +43,5 @@ if __name__ == "__main__":
             result = {"key": municipality_code, **data}
             # print(result)
             # 여기에 producer  연결하는 코드 작성
+            producer.send(topicName, result)
+            time.sleep(2)

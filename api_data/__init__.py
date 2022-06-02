@@ -1,6 +1,7 @@
 from nemo import get_nemo_api
 from seoul_api import get_all_seoul_data
 from utils import SEOUL_DATA_API_KEYS, SEOUL_MUNICIPALITY_CODE
+from kafka import KafkaProducer
 import json
 import time
 

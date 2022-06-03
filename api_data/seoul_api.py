@@ -21,10 +21,7 @@ def get_all_seoul_data(key, service_key, year):
                 )
         else:
             yield get_openapi_seoul_data(
-                service_key=service_key,
-                start=start,
-                end=start + limit,
-                year=year,
+                service_key=service_key, start=start, end=start + limit, year=year,
             )
         start += limit
 
@@ -62,6 +59,8 @@ def get_openapi_seoul_data(service_key, start, end, type="json", year="", quarte
             res.update({"year": year})
         if quarter:
             res.update({"quarter": quarter})
+
+        res.update({"page": int(start // 20) + 1})
 
         return res
     except Exception as e:

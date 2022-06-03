@@ -9,12 +9,7 @@ def get_all_openapi_data(key, data_api_key, start, end, year):
             if start == 100:
                 break
             for year in [2017, 2018, 2019, 2020, 2021, 2022]:
-                res = get_openapi_seoul_data(
-                    service_key=data_api_key,
-                    start=start,
-                    end=start + limit,
-                    year=year,
-                )
+                res = get_openapi_seoul_data(service_key=data_api_key, start=start, end=start + limit, year=year,)
                 if not res.get("data"):
                     break
                 res = {"key": key, "year": year, "data": res}

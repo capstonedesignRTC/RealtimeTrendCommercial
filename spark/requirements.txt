@@ -1,3 +1,4 @@
 findspark
 pandas
-pyspark 
+pyspark
+boto3

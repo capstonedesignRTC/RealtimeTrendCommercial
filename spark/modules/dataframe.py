@@ -1,7 +1,10 @@
-from pyspark.sql import DataFrame
-from pyspark.sql.functions import col, concat_ws, lit
-from pyspark.sql.types import IntegerType, StringType, StructField, StructType
+import logging
 
+import pyspark.sql.functions as F
+from pyspark.sql import DataFrame
+from pyspark.sql.functions import col, concat_ws, lit, row_number, when
+from pyspark.sql.types import IntegerType, StringType, StructField, StructType
+from pyspark.sql.window import Window
 from spark.spark_configure import SparkResult
 
 
@@ -41,106 +44,98 @@ def get_sk_code_to_hjd_code(df: DataFrame) -> dict():
 
 
 class DF(object):
+    schema = StructType(
+        [
+            StructField("year", IntegerType(), nullable=False),
+            StructField("quarter", IntegerType(), nullable=False),
+            StructField("big_code", IntegerType(), nullable=False),
+            StructField("middle_code", IntegerType(), nullable=False),
+            StructField("small_code", IntegerType(), nullable=False),
+            # StructField("one_rank", IntegerType(), nullable=True),
+            StructField("one_score", IntegerType(), nullable=True),
+            # StructField("two_rank", IntegerType(), nullable=True),
+            StructField("two_score", IntegerType(), nullable=True),
+            # StructField("three_rank", IntegerType(), nullable=True),
+            StructField("three_score", IntegerType(), nullable=True),
+            # StructField("four_rank", IntegerType(), nullable=True),
+            StructField("four_score", IntegerType(), nullable=True),
+            # StructField("five_rank", IntegerType(), nullable=True),
+            StructField("five_score", IntegerType(), nullable=True),
+            # StructField("six_rank", IntegerType(), nullable=True),
+            StructField("six_score", IntegerType(), nullable=True),
+            # StructField("seven_rank", IntegerType(), nullable=True),
+            StructField("seven_score", IntegerType(), nullable=True),
+            # StructField("eight_rank", IntegerType(), nullable=True),
+            StructField("eight_score", IntegerType(), nullable=True),
+            # StructField("nine_rank", IntegerType(), nullable=True),
+            StructField("nine_score", IntegerType(), nullable=True),
+            # StructField("ten_rank", IntegerType(), nullable=True),
+            StructField("ten_score", IntegerType(), nullable=True),
+            # StructField("eleven_rank", IntegerType(), nullable=True),
+            StructField("eleven_score", IntegerType(), nullable=True),
+            # StructField("twelve_rank", IntegerType(), nullable=True),
+            StructField("twelve_score", IntegerType(), nullable=True),
+            # StructField("thirteen_rank", IntegerType(), nullable=True),
+            StructField("thirteen_score", IntegerType(), nullable=True),
+            # StructField("fourteen_rank", IntegerType(), nullable=True),
+            StructField("fourteen_score", IntegerType(), nullable=True),
+            # StructField("fifteen_rank", IntegerType(), nullable=True),
+            StructField("fifteen_score", IntegerType(), nullable=True),
+            # StructField("sixteen_rank", IntegerType(), nullable=True),
+            StructField("sixteen_score", IntegerType(), nullable=True),
+            StructField("total_score", IntegerType(), nullable=True),
+            StructField("rank", IntegerType(), nullable=True),
+        ]
+    )
+
     def __init__(self):
         self.spark = SparkResult()
 
+        self.res_one = dict()
+        self.res_two = dict()
+        self.res_three = dict()
+
     def get_empty_dataframe(self) -> DataFrame:
-        schema = StructType(
-            [
-                StructField("big_code", IntegerType(), nullable=False),
-                StructField("middle_code", IntegerType(), nullable=False),
-                StructField("small_code", IntegerType(), nullable=False),
-                StructField("year", IntegerType(), nullable=False),
-                StructField("quarter", IntegerType(), nullable=False),
-                StructField("one_rank", IntegerType(), nullable=True),
-                StructField("one_score", IntegerType(), nullable=True),
-                StructField("two_rank", IntegerType(), nullable=True),
-                StructField("two_score", IntegerType(), nullable=True),
-                StructField("three_rank", IntegerType(), nullable=True),
-                StructField("three_score", IntegerType(), nullable=True),
-                StructField("four_rank", IntegerType(), nullable=True),
-                StructField("four_score", IntegerType(), nullable=True),
-                StructField("five_rank", IntegerType(), nullable=True),
-                StructField("five_score", IntegerType(), nullable=True),
-                StructField("six_rank", IntegerType(), nullable=True),
-                StructField("six_score", IntegerType(), nullable=True),
-                StructField("seven_rank", IntegerType(), nullable=True),
-                StructField("seven_score", IntegerType(), nullable=True),
-                StructField("eight_rank", IntegerType(), nullable=True),
-                StructField("eight_score", IntegerType(), nullable=True),
-                StructField("nine_rank", IntegerType(), nullable=True),
-                StructField("nine_score", IntegerType(), nullable=True),
-                StructField("ten_rank", IntegerType(), nullable=True),
-                StructField("ten_score", IntegerType(), nullable=True),
-                StructField("eleven_rank", IntegerType(), nullable=True),
-                StructField("eleven_score", IntegerType(), nullable=True),
-                StructField("twelve_rank", IntegerType(), nullable=True),
-                StructField("twelve_score", IntegerType(), nullable=True),
-                StructField("thirteen_rank", IntegerType(), nullable=True),
-                StructField("thirteen_score", IntegerType(), nullable=True),
-                StructField("fourteen_rank", IntegerType(), nullable=True),
-                StructField("fourteen_score", IntegerType(), nullable=True),
-                StructField("fifteen_rank", IntegerType(), nullable=True),
-                StructField("fifteen_score", IntegerType(), nullable=True),
-                StructField("sixteen_rank", IntegerType(), nullable=True),
-                StructField("sixteen_score", IntegerType(), nullable=True),
-            ]
-        )
-        df = self.spark.create_DF(schema)
-        df.printSchema()
+
+        df = self.spark.create_DF(self.schema)
+        # df.printSchema()
         return df
 
     def get_function(self, num: int):
         if num == 1:
             return self.seoul_one, self.calculate_one
-
         elif num == 2:
             return self.seoul_two, self.calculate_two
-
         elif num == 3:
             return self.seoul_three, self.calculate_three
-
         elif num == 4:
-            return self.seoul_four
-
+            return self.seoul_four, self.calculate_three
         elif num == 5:
-            return self.seoul_five
-
+            return self.seoul_five, self.calculate_three
         elif num == 5:
-            return self.seoul_five
-
+            return self.seoul_five, self.calculate_three
         elif num == 6:
-            return self.seoul_six
-
+            return self.seoul_six, self.calculate_three
         elif num == 7:
-            return self.seoul_seven
-
+            return self.seoul_seven, self.calculate_three
         elif num == 8:
-            return self.seoul_eight
-
+            return self.seoul_eight, self.calculate_three
         elif num == 9:
-            return self.seoul_nine
-
+            return self.seoul_nine, self.calculate_three
         elif num == 10:
-            return self.seoul_ten
-
+            return self.seoul_ten, self.calculate_three
         elif num == 11:
-            return self.seoul_eleven
-
+            return self.seoul_eleven, self.calculate_three
         elif num == 12:
-            return self.seoul_twelve
-
+            return self.seoul_twelve, self.calculate_three
         elif num == 13:
-            return self.seoul_thirteen
-
+            return self.seoul_thirteen, self.calculate_three
         elif num == 14:
-            return self.seoul_fourteen
-
+            return self.seoul_fourteen, self.calculate_three
         elif num == 15:
-            return self.seoul_fifteen
-
+            return self.seoul_fifteen, self.calculate_three
         elif num == 16:
-            return self.seoul_sixteen
+            return self.seoul_sixteen, self.calculate_three
 
     def seoul_one(self, df_spark: DataFrame) -> DataFrame:
         # https://data.seoul.go.kr/dataList/OA-15568/S/1/datasetView.do
@@ -237,19 +232,118 @@ class DF(object):
         # df_spark.show(2)
         return df_spark
 
-    def calculate_three(self, df_data: DataFrame, year: int, big: int, middle: int, small: int):
+    def calculate_three(self, df_data: DataFrame, year: int):  # , big: int, middle: int, small: int):
+        logging.error("calculate_three start")
+
         df_data.createOrReplaceTempView("df")
 
-        # df_data = df_data.filter(df_data.STDR_YY_CD == year)
+        if not self.res_three:
+            score_dict = {}
+            """
+            방법 1
+            총 인구, 20대, 토요일, 일요일
+            """
+            df_data_one = df_data.select(
+                col("STDR_YY_CD"),  # 기준 년 코드
+                col("STDR_QU_CD"),  # 기준 분기 코드
+                col("TRDAR_CD"),
+                col("TOT_FLPOP_CO"),
+                col("AGRDE_20_FLPOP_CO"),
+                col("SAT_FLPOP_CO"),
+                col("SUN_FLPOP_CO"),
+            )
+            three_one = df_data_one.orderBy(
+                col("TOT_FLPOP_CO").desc(),
+                col("AGRDE_20_FLPOP_CO").desc(),
+                col("SAT_FLPOP_CO").desc(),
+                col("SUN_FLPOP_CO").desc(),
+            )
 
-        res = dict()
+            three_one = three_one.rdd.zipWithIndex().toDF()
+            three_one = three_one.select(col("_1.*"), col("_2").alias("RANK_1"))
+            three_one = three_one.select(col("STDR_YY_CD"), col("STDR_QU_CD"), col("TRDAR_CD"), col("RANK_1"),)
+            three_one.show(3)
+            """
+            +----------+----------+--------+------+
+            |STDR_YY_CD|STDR_QU_CD|TRDAR_CD|RANK_1|
+            +----------+----------+--------+------+
+            |      2021|         4| 2110948|     0|
+            |      2021|         3| 2110948|     1|
+            |      2021|         2| 2110948|     2|
+            +----------+----------+--------+------+      
+                        
+            """
 
-        new_df = df_data.select(col("TRDAR_CD"), col("TOT_FLPOP_CO"))
+            """
+            방법 2
+            여성 인구, 30대, 40대, 총_생활인구_수
+            """
+            df_data_two = df_data.select(
+                col("STDR_YY_CD"),  # 기준 년 코드
+                col("STDR_QU_CD"),  # 기준 분기 코드
+                col("TRDAR_CD"),
+                col("FML_FLPOP_CO"),
+                col("AGRDE_30_FLPOP_CO"),
+                col("AGRDE_40_FLPOP_CO"),
+                col("TOT_FLPOP_CO"),
+            )
+            three_two = df_data_two.orderBy(
+                col("FML_FLPOP_CO").desc(),
+                col("AGRDE_30_FLPOP_CO").desc(),
+                col("AGRDE_40_FLPOP_CO").desc(),
+                col("TOT_FLPOP_CO").desc(),
+            )
 
-        for row in df_data.sort(new_df.TOT_FLPOP_CO.desc()).collect():
-            pass
+            three_two = three_two.rdd.zipWithIndex().toDF()
+            three_two = three_two.select(col("_1.*"), col("_2").alias("RANK_2"))
+            three_two = three_two.select(col("STDR_YY_CD"), col("STDR_QU_CD"), col("TRDAR_CD"), col("RANK_2"),)
+            # three_two.show(3)
+            """
+            +----------+----------+--------+------+
+            |STDR_YY_CD|STDR_QU_CD|TRDAR_CD|RANK_2|
+            +----------+----------+--------+------+
+            |      2021|         4| 2110948|     0|
+            |      2021|         3| 2110948|     1|
+            |      2021|         2| 2110948|     2|
+            +----------+----------+--------+------+
+            """
 
-        self.spark.spark.catalog.dropTempView("df")
+            result = three_one.join(three_two, on=["STDR_YY_CD", "STDR_QU_CD", "TRDAR_CD"])
+
+            three_one.drop()
+            three_two.drop()
+
+            result = (
+                result.withColumn("RANK", col("RANK_1") + col("RANK_2"))
+                .sort("RANK")
+                .select(col("STDR_YY_CD"), col("STDR_QU_CD"), col("TRDAR_CD"))
+            )
+            result = result.rdd.zipWithIndex().toDF()
+            result = result.select(col("_1.*"), col("_2").alias("RANK3"))
+
+            result.show(10)
+            """
+            +----------+----------+--------+----+
+            |STDR_YY_CD|STDR_QU_CD|TRDAR_CD|RANK|
+            +----------+----------+--------+----+
+            |      2021|         4| 2110532|   0|
+            |      2021|         4| 2110533|   1|
+            |      2021|         2| 2110532|   2|
+            |      2021|         2| 2110533|   3|
+            |      2021|         3| 2110532|   4|
+            |      2021|         1| 2110532|   5|
+            |      2021|         3| 2110533|   6|
+            |      2021|         1| 2110533|   7|
+            |      2021|         1| 2110656|   8|
+            |      2021|         1| 2110654|   9|
+            +----------+----------+--------+----+
+
+            """
+            # 설정 이후 drop
+            self.spark.spark.catalog.dropTempView("df")
+            self.res_three = result
+
+        return self.res_three, ["STDR_YY_CD", "STDR_QU_CD", "TRDAR_CD"]
 
     def seoul_four(self, df_spark: DataFrame) -> DataFrame:
         # https://data.seoul.go.kr/dataList/OA-15570/S/1/datasetVieeew.do

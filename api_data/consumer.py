@@ -24,7 +24,7 @@ if __name__ == "__main__":
         auto_offset_reset="earliest",
         group_id="consumer-group-a",
         # value_deserializer=json_deserializer
-        value_deserializer=lambda m: json.loads(m.decode("utf-8")),
+        value_deserializer=lambda m: json.loads(m.decode("euc-kr")),
     )
 
     print("Start Consumer")
@@ -32,8 +32,8 @@ if __name__ == "__main__":
 
     for msg in consumer:
         try:
-            raw_data = pd.json_normalize(msg.value["data"])
             s3_path = f"{msg.value['key']}_{msg.value['year']}_{msg.value['page']}.csv"
+            raw_data = pd.json_normalize(msg.value["data"])
             csv_buffer = StringIO()
             # msg = json.dumps(msg.value["data"])
             raw_data.to_csv(csv_buffer, encoding="euc-kr")

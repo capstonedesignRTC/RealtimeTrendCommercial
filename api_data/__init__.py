@@ -16,10 +16,10 @@ def get_partition(key, all, available):
     return 0
 
 
-# bootstrap_servers = ["localhost:9091", "localhost:9092", "localhost:9093"]
-# topicName = "practice"
+bootstrap_servers = ["localhost:9091", "localhost:9092", "localhost:9093"]
+topicName = "practice"
 
-# producer = KafkaProducer(acks=0, bootstrap_servers=bootstrap_servers, value_serializer=json_serializer)
+producer = KafkaProducer(acks=0, bootstrap_servers=bootstrap_servers, value_serializer=json_serializer)
 
 if __name__ == "__main__":
     """
@@ -35,8 +35,8 @@ if __name__ == "__main__":
                 # 여기에 producer  연결하는 코드 작성
 
                 print(result.get("key"), result.get("year"), result.get("page"))
-                # producer.send(topicName, result)
-    #             time.sleep(2)
+                producer.send(topicName, result)
+                time.sleep(2)
     #             # 여기에 producer  연결하는 코드 작성
 
     # """

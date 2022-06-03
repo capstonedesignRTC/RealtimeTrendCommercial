@@ -27,17 +27,17 @@ if __name__ == "__main__":
         value_deserializer=lambda m: json.loads(m.decode("utf-8")),
     )
 
-    for i in range(1, 10):
-        for j in range(2018, 2022):
-            for k in range(0, 5):
-                print("Start Consumer")
-                # args = {'ACL': 'public-read'}
+    print("Start Consumer")
+    # args = {'ACL': 'public-read'}
 
-                for msg in consumer:
-                    raw_data = pd.json_normalize(msg.value["data"])
-                    s3_path = f"{i}_{msg.value['year']}_{msg.value['page']}.csv"
-                    csv_buffer = StringIO()
-                    # msg = json.dumps(msg.value["data"])
-                    raw_data.to_csv(csv_buffer, encoding="euc-kr")
+    for msg in consumer:
+        try:
+            raw_data = pd.json_normalize(msg.value["data"])
+            s3_path = f"{msg.value['key']}_{msg.value['year']}_{msg.value['page']}.csv"
+            csv_buffer = StringIO()
+            # msg = json.dumps(msg.value["data"])
+            raw_data.to_csv(csv_buffer, encoding="euc-kr")
 
-                    s3.put_object(Body=csv_buffer.getvalue(), Bucket="rtc25", Key=s3_path)
+            s3.put_object(Body=csv_buffer.getvalue(), Bucket="rtc25", Key=s3_path)
+        except:
+            pass

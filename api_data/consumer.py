@@ -16,7 +16,7 @@ bootstrap_servers = ["localhost:9091", "localhost:9092", "localhost:9093"]
 
 if __name__ == "__main__":
 
-    topicName = "rtc"
+    topicName = "practice"
 
     consumer = KafkaConsumer(
         topicName,

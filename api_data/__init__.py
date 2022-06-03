@@ -9,7 +9,7 @@ from utils import SEOUL_DATA_API_KEYS, SEOUL_MUNICIPALITY_CODE
 
 
 def json_serializer(data):
-    return json.dumps(data).encode("utf-8")
+    return json.dumps(data).encode("euc-kr")
 
 
 def get_partition(key, all, available):

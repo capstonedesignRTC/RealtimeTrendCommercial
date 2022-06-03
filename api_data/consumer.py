@@ -28,7 +28,7 @@ if __name__ == "__main__":
     )
 
     print("Start Consumer")
-    # args = {'ACL': 'public-read'}
+    args = {'ACL': 'public-read'}
 
     for msg in consumer:
         try:

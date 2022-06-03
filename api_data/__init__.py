@@ -11,11 +11,6 @@ from utils import SEOUL_DATA_API_KEYS, SEOUL_MUNICIPALITY_CODE
 def json_serializer(data):
     return json.dumps(data).encode("euc-kr")
 
-
-def get_partition(key, all, available):
-    return 0
-
-
 bootstrap_servers = ["localhost:9091", "localhost:9092", "localhost:9093"]
 topicName = "practice"
 

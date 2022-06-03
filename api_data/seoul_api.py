@@ -10,9 +10,9 @@ SEOUL_URL = "http://openAPI.seoul.go.kr:8088/{}/{}/{}/{}/{}"
 
 
 def get_all_seoul_data(key, service_key, year):
-    start, limit = 0, 20
+    start, limit = 0, 900
     while True:
-        if start == 100:
+        if start > 7000:
             break
         if key == 6:  # 분기가 필요한 api
             for quarter in [1, 2, 3, 4]:
@@ -21,7 +21,10 @@ def get_all_seoul_data(key, service_key, year):
                 )
         else:
             yield get_openapi_seoul_data(
-                service_key=service_key, start=start, end=start + limit, year=year,
+                service_key=service_key,
+                start=start,
+                end=start + limit,
+                year=year,
             )
         start += limit
 
@@ -60,7 +63,7 @@ def get_openapi_seoul_data(service_key, start, end, type="json", year="", quarte
         if quarter:
             res.update({"quarter": quarter})
 
-        res.update({"page": int(start // 20) + 1})
+        res.update({"page": int(start // 900) + 1})
 
         return res
     except Exception as e:

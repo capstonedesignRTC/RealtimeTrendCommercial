@@ -70,4 +70,3 @@ def one_get_odcloud_gov_data(service_key, page, size, type="json", sub_params={}
     except Exception as e:
         logging.error(e.__str__())
         return {}
-

@@ -35,6 +35,7 @@ if __name__ == "__main__":
                 # 여기에 producer  연결하는 코드 작성
 
                 print(result.get("key"), result.get("year"), result.get("page"))
+
                 producer.send(topicName, result)
                 time.sleep(2)
     #             # 여기에 producer  연결하는 코드 작성

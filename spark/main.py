@@ -15,14 +15,15 @@ if __name__ == "__main__":
 
     print("===================")
     # in local
-    convert_code_csv = spark.get_file("convert_code.csv")
-    # # in docker or emr
-    # convert_code_csv = spark.get_file_test("convert_code.csv")
-    code_dict = get_sk_code_to_hjd_code(convert_code_csv)
-    logging.error("creating code_dict complete")
+    # convert_code_csv = spark.get_file("convert_code.csv")
+    # # # in docker or emr
+    # # convert_code_csv = spark.get_file_test("convert_code.csv")
+    # code_dict = get_sk_code_to_hjd_code(convert_code_csv)
+    # logging.error("creating code_dict complete")
 
     print("===================")
 
+    code_dict = {}
     calculate = Calculate(spark, code_dict)
 
     # calculate.make_pre_df(2021, 0)
@@ -59,4 +60,4 @@ if __name__ == "__main__":
     #     result = calculate.calculation_all_cities()
 
     print("===================")
-    result.show(2)
+

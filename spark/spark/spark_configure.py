@@ -6,7 +6,7 @@ from botocore.exceptions import ClientError
 from pyspark import SparkConf, SQLContext
 from pyspark.conf import SparkConf
 from pyspark.sql import DataFrame, SparkSession
-from utils.my_secret import profile_info
+from my_secret import profile_info
 
 # AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
 # AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")

@@ -5,7 +5,7 @@ from pyspark import SparkContext
 from pyspark.sql import DataFrame
 from pyspark.sql.functions import col
 from spark.spark_configure import SparkS3
-from utils.my_secret import profile_info
+from my_secret import profile_info
 from utils.utils import SEOUL_MUNICIPALITY_CODE, get_sys_args
 
 from modules.dataframe import DF
@@ -79,13 +79,13 @@ class Calculate(object):
             for year in years:  # 해당 년도 가져오기
                 file_name = f"{num}_{year}.csv"  # 함수 이름
 
-                file_name = "test_three.csv"
+                file_name = "test_four.csv"
                 print(file_name)
                 df_spark = self.spark.get_file(file_name)  # 테스트 위해 파일 고정
                 # df_spark = self.spark.get_file_test()
                 if df_spark is None:
                     continue
-                num = 3
+                num = 4
                 df_func, df_calc_func = self.df_func.get_function(num)
                 df_data = df_func(df_spark)  # 우선은 분리시켜놓고 나중에 합치던가 하자
                 final_df_val = df_calc_func(df_data, year, big, middle, small)  # value
@@ -110,27 +110,27 @@ class Calculate(object):
         print(years, quarters, funcs)
 
         for year in years:  # 해당 년도 가져오기
-            self.make_pre_df(year, 0)
+            # self.make_pre_df(year, 0)
             for num in funcs:  # 해당 함수들을 가져오기
                 file_name = f"{num}_{year}.csv"  # 함수 이름
 
-                file_name = "test_three.csv"
+                num = 7
+                file_name = "test_seven.csv"
                 print(file_name)
                 df_spark = self.spark.get_file(file_name)  # 테스트 위해 파일 고정
                 # df_spark = self.spark.get_file_test()
                 if df_spark is None:
                     continue
-                num = 3
+
                 df_func, df_calc_func = self.df_func.get_function(num)
                 df_data = df_func(df_spark)  # 우선은 분리시켜놓고 나중에 합치던가 하자
                 result_df, on_list = df_calc_func(df_data, year)  # value
 
+                return
                 # res = result_df.rdd.coalesce(1).saveAsTextFile("s3://rtc-spark/result_three.csv")
                 print("data send start")
 
                 save_df_result = result_df.toJSON().map(lambda x: json.loads(x)).collect()
-                breakpoint()
-
                 self.spark.s3_client.put_object(
                     Body=json.dumps(save_df_result), Bucket=profile_info["aws_bucket_name"], Key="result_three.json"
                 )

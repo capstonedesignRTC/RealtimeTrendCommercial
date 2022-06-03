@@ -1,20 +1,19 @@
-import json
-import time
-
-from kafka import KafkaProducer
-
 from nemo import get_nemo_api
 from seoul_api import get_all_seoul_data
 from utils import SEOUL_DATA_API_KEYS, SEOUL_MUNICIPALITY_CODE
+from kafka import KafkaProducer
+import json
+import time
 
-
-def json_serializer(data):
-    return json.dumps(data).encode("euc-kr")
 
 bootstrap_servers = ["localhost:9091", "localhost:9092", "localhost:9093"]
 topicName = "practice"
 
-producer = KafkaProducer(acks=0, bootstrap_servers=bootstrap_servers, value_serializer=json_serializer)
+producer = KafkaProducer(acks=0,
+                         bootstrap_servers=bootstrap_servers,
+                        #  value_serializer=json_serializer
+                         value_serializer=lambda x: json.dumps(x).encode('euc-kr')
+                         )
 
 if __name__ == "__main__":
     """
@@ -29,7 +28,7 @@ if __name__ == "__main__":
                 # print(result)
                 # 여기에 producer  연결하는 코드 작성
 
-                print(result.get("key"), result.get("year"), result.get("page"))
+                # print(result.get("key"), result.get("year"), result.get("page"))
 
                 producer.send(topicName, result)
                

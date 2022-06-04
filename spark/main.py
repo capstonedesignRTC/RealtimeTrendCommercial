@@ -14,19 +14,14 @@ if __name__ == "__main__":
     spark = SparkS3()
 
     print("===================")
-    # in local
-    # convert_code_csv = spark.get_file("convert_code.csv")
-    # # # in docker or emr
-    # # convert_code_csv = spark.get_file_test("convert_code.csv")
-    # code_dict = get_sk_code_to_hjd_code(convert_code_csv)
-    # logging.error("creating code_dict complete")
+    convert_code_csv = spark.get_file("convert_code.csv")
+    code_dict = get_sk_code_to_hjd_code(convert_code_csv)
+
+    logging.error("creating code_dict complete")
 
     print("===================")
-
-    code_dict = {}
     calculate = Calculate(spark, code_dict)
 
-    # calculate.make_pre_df(2021, 0)
     city_input, specific_args = None, []
 
     for idx, arg in enumerate(sys.argv[1:]):
@@ -40,24 +35,26 @@ if __name__ == "__main__":
     logging.error(f"GOT city_input : {city_input} specific_args : {specific_args}")
     result = calculate.calculation_all_founds()
 
-    # if city_input is not None:
-    #     if city_input // 10000 == 1:
-    #         print("big")
-    #         """big code만 필요"""
-    #         result = calculate.calculation_big_cities(city_input)
-    #     elif city_input // 10000000 == 1:
-    #         print("middle")
-    #         """big code도 필요"""
-    #         big = calculate.find_city_code(city_input, True)
-    #         result = calculate.calculation_middle_cities(big, city_input)
-    #     else:
-    #         """big, middle code도 필요"""
-    #         print("small")
-    #         big, middle = calculate.find_city_code(city_input, False)
-    #         result = calculate.calculation_small_cities(big, middle, city_input)
-    # else:
-    #     print("all")
-    #     result = calculate.calculation_all_cities()
-
     print("===================")
+
+    # # if city_input is not None:
+    # #     if city_input // 10000 == 1:
+    # #         print("big")
+    # #         """big code만 필요"""
+    # #         result = calculate.calculation_big_cities(city_input)
+    # #     elif city_input // 10000000 == 1:
+    # #         print("middle")
+    # #         """big code도 필요"""
+    # #         big = calculate.find_city_code(city_input, True)
+    # #         result = calculate.calculation_middle_cities(big, city_input)
+    # #     else:
+    # #         """big, middle code도 필요"""
+    # #         print("small")
+    # #         big, middle = calculate.find_city_code(city_input, False)
+    # #         result = calculate.calculation_small_cities(big, middle, city_input)
+    # # else:
+    # #     print("all")
+    # #     result = calculate.calculation_all_cities()
+
+    # print("===================")
 

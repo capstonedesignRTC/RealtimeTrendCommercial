@@ -2,6 +2,7 @@ import logging
 import os
 
 import boto3
+import pandas as pd
 from botocore.exceptions import ClientError
 from pyspark import SparkConf, SQLContext
 from pyspark.conf import SparkConf
@@ -18,7 +19,7 @@ class SparkResult(object):
     def __init__(self):
         self.spark = SparkSession.builder.appName("spark_result").getOrCreate()
 
-    def create_DF(self, schema) -> DataFrame:
+    def create_DF(self, schema):  # -> pd.DataFrame:
         emptyRDD = self.spark.sparkContext.emptyRDD()
         return self.spark.createDataFrame(emptyRDD, schema=schema)
 

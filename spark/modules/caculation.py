@@ -5,7 +5,7 @@ from pyspark import SparkContext
 from pyspark.sql import DataFrame
 from pyspark.sql.functions import col
 from spark.spark_configure import SparkS3
-from my_secret import profile_info
+from utils.my_secret import profile_info
 from utils.utils import SEOUL_MUNICIPALITY_CODE, get_sys_args
 
 from modules.dataframe import DF
@@ -29,7 +29,7 @@ class Calculate(object):
                 for small in val_2.keys():
                     unknown_df = [int(year), int(quarter), int(big), int(middle), int(small)]
 
-                    while len(unknown_df) != 23:
+                    while len(unknown_df) != 18:
                         unknown_df.append(0)
 
                     pre_data.append(unknown_df)
@@ -105,25 +105,43 @@ class Calculate(object):
                         return big, middle
 
     def calculation_all_founds(self):
-
         years, quarters, funcs = get_sys_args(self.specific_args)
         print(years, quarters, funcs)
 
         for year in years:  # 해당 년도 가져오기
-            # self.make_pre_df(year, 0)
+            self.make_pre_df(year, 0)
             for num in funcs:  # 해당 함수들을 가져오기
-                file_name = f"{num}_{year}.csv"  # 함수 이름
+                # part_df_list = []
+                # page = 1
+                # while True:
+                #     file_name = f"{num}_{year}_{page}.csv"
+                #     df_spark = self.spark.get_file(file_name)
+                #     if df_spark is None:
+                #         break
+                #     page += 1
+                #     part_df_list.append(df_spark)
 
-                num = 7
-                file_name = "test_seven.csv"
+                # full_df = part_df_list.pop()
+                # while part_df_list:
+                #     part_df = part_df_list.pop()
+                #     full_df = full_df.union(part_df)
+
+                # print(full_df.count())
+
+                # full_df.show(1)
+
+                ####################
+
+                num = 15
+                file_name = "test_fifteen.csv"
                 print(file_name)
-                df_spark = self.spark.get_file(file_name)  # 테스트 위해 파일 고정
-                # df_spark = self.spark.get_file_test()
-                if df_spark is None:
+                full_df = self.spark.get_file(file_name)  # 테스트 위해 파일 고정
+                # df_spark = self.spark.get_file_test(file_name)
+                if full_df is None:
                     continue
 
                 df_func, df_calc_func = self.df_func.get_function(num)
-                df_data = df_func(df_spark)  # 우선은 분리시켜놓고 나중에 합치던가 하자
+                df_data = df_func(full_df)  # 우선은 분리시켜놓고 나중에 합치던가 하자
                 result_df, on_list = df_calc_func(df_data, year)  # value
 
                 return

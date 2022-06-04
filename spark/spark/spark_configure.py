@@ -6,7 +6,7 @@ from botocore.exceptions import ClientError
 from pyspark import SparkConf, SQLContext
 from pyspark.conf import SparkConf
 from pyspark.sql import DataFrame, SparkSession
-from my_secret import profile_info
+from utils.my_secret import profile_info
 
 # AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
 # AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
@@ -66,7 +66,7 @@ class SparkS3(object):
     def stop_spark(self):
         self.spark.stop()
 
-    def get_file(self, file_name="test_three.csv"):  #  -> DataFrame:
+    def get_file(self, file_name="test_three.csv") -> DataFrame:
         try:
             file_path = f"Downloads/{file_name}"
 
@@ -75,30 +75,32 @@ class SparkS3(object):
 
             df_spark = (
                 self.spark.read.format("csv")
-                .option("encoding", "euc-kr")  # "utf-8")
+                .option("encoding", "euc-kr")  #  "utf-8")
                 .option("header", True)
                 .option("inferSchema", True)
                 .csv(file_path)
                 .coalesce(1)
             )
+            # os.remove(file_path)
             return df_spark
         except:
             logging.error("no file exists")
             return None
 
     def get_file_test(self, file_name="convert_code.csv") -> DataFrame:
+        try:
+            file_name = f"s3a://{self.bucket_name}/{file_name}"
 
-        file_name = f"s3a://{self.bucket_name}/{file_name}"
+            df_spark = (
+                self.spark.read.format("csv")
+                .option("encoding", "utf-8")  # "euc-kr"
+                .option("header", True)
+                .option("inferSchema", False)
+                .load(file_name)
+                .coalesce(1)
+            )
 
-        logging.info(file_name)
-
-        df_spark = (
-            self.spark.read.format("csv")
-            .option("encoding", "euc-kr")
-            .option("header", True)
-            # .option("inferSchema", false)
-            .load(file_name)
-            .coalesce(1)
-        )
-        return df_spark
-
+            return df_spark
+        except:
+            logging.error("no file exists")
+            return None

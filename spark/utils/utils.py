@@ -22,7 +22,11 @@ def get_sys_args(ls: list):
             res["funcs"].append(l)
 
     year, quarter, func = res.get("year", False), res.get("quarter", False), res.get("funcs", False)
-    funcs = list(range(1, 17))
+    funcs = list(range(1, 16))
+    funcs.remove(9)  # 9 번은 계산 함수임
+    funcs.remove(12)  # 12 번은 14번 함수로 대체될 수 있음
+    funcs.remove(13)  # 13 번은 14번 함수로 대체될 수 있음
+
     years = list(range(2018, 2023))
     quarters = list(range(1, 5))
     if func:

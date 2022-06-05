@@ -22,9 +22,7 @@ RUN apt-get update -y && \
     apt-get install -y python3-pip 
 
 RUN pip3 install --upgrade pip setuptools wheel &&\
-    pip3 install pandas &&\
     pip3 install pyspark &&\
-    pip3 install findspark &&\
     pip3 install wget pyspark==${spark_version}
 
 ### spark

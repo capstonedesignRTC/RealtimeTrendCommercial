@@ -8,6 +8,7 @@ spark/.vscode
 __pycache__/
 *.py[cod]
 *$py.class
+spark/Results
 
 # C extensions
 *.so
@@ -134,3 +135,8 @@ dmypy.json
 # Pyre type checker
 .pyre/
 spark/utils/my_secret.py
+*.crc
+spark/Results/1_2018_1_report/_SUCCESS
+*.csv
+spark/Results/2018_1_report/_SUCCESS
+spark/Results/2_2018_1_report/_SUCCESS

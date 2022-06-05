@@ -12,7 +12,7 @@ from spark.spark_configure import SparkS3
 if __name__ == "__main__":
     logging.error("start spark process")
 
-    spark = SparkS3(sys.argv)
+    spark = SparkS3()
 
     print("===================")
     convert_code_csv = spark.get_file("convert_code.csv")

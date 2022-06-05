@@ -1,10 +1,11 @@
 import json
 import logging
 
+import pyspark.sql.functions as F
 from pyspark.sql import DataFrame
 from pyspark.sql.functions import col, lit
 from spark.spark_configure import SparkS3
-from utils.utils import BUCKET_NAME, get_sys_args
+from utils.utils import get_sys_args
 
 from modules.dataframe import DF
 
@@ -43,65 +44,9 @@ class Calculate(object):
         self.result = self.result.withColumn(f"RANK{num}", lit(0))
 
     def update_final_result_df(self, year: int = 2018, quarter: int = 1):
-
-        for col in [
-            "RANK1",
-            "RANK2",
-            "RANK3",
-            "RANK4",
-            "RANK5",
-            "RANK6",
-            "RANK7",
-            "RANK8",
-            "RANK10",
-            "RANK11",
-            "RANK14",
-            "RANK15",
-        ]:
-            if col not in self.result.columns:
-                self.result.withColumn(col, lit(0))
-
-        final_report_df = self.result.select(
-            col("STDR_YY_CD"),
-            col("STDR_QU_CD"),
-            col("TRDAR_CD"),
-            col("RANK1"),
-            col("RANK2"),
-            col("RANK3"),
-            col("RANK4"),
-            col("RANK5"),
-            col("RANK6"),
-            col("RANK7"),
-            col("RANK8"),
-            col("RANK10"),
-            col("RANK11"),
-            col("RANK14"),
-            col("RANK15"),
-            (
-                col("RANK1")
-                + col("RANK2")
-                + col("RANK3")
-                + col("RANK4")
-                + col("RANK5")
-                + col("RANK6")
-                + col("RANK7")
-                + col("RANK8")
-                + col("RANK10")
-                + col("RANK11")
-                + col("RANK14")
-                + col("RANK15")
-            ).alias("TOTAL_SCORE"),
-        )
-
-        self.result.drop()
-
-        final_report_df = final_report_df.orderBy(col("TOTAL_SCORE").desc())
-        final_report_df = final_report_df.rdd.zipWithIndex().toDF()
-        final_report_df = final_report_df.select(col("_1.*"), col("_2").alias("RANK"))
-        final_report_df.coalesce(1).write.option("header", "true").csv(f"Results/{year}_{quarter}_report")
-        save_df_result = final_report_df.toJSON().map(lambda x: json.loads(x)).collect()
-
-        self.spark.send_file(save_df_result, f"result/{year}_{quarter}_report.json")
+        result = self.df_func.update_result_empty_col(self.result)
+        result = self.df_func.calc_final_result(result, year, quarter)
+        self.spark.send_file(result, f"result/{year}_{quarter}_report.json")
 
     def find_city_code(self, code, is_middle=True):
         for big, val1 in self.code_dict.items():

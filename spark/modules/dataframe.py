@@ -1,8 +1,9 @@
+import json
 import logging
 
 import pyspark.sql.functions as F
 from pyspark.sql import DataFrame
-from pyspark.sql.functions import col, when
+from pyspark.sql.functions import col, lit, when
 from pyspark.sql.types import IntegerType, StructField, StructType
 from spark.spark_configure import SparkResult
 
@@ -1189,6 +1190,52 @@ class DF(object):
         self.spark.spark.catalog.dropTempView("df")
         return result
 
+    def update_result_empty_col(self, df: DataFrame):
+        for col in [
+            "RANK1",
+            "RANK2",
+            "RANK3",
+            "RANK4",
+            "RANK5",
+            "RANK6",
+            "RANK7",
+            "RANK8",
+            "RANK10",
+            "RANK11",
+            "RANK14",
+            "RANK15",
+        ]:
+            if col not in df.columns:
+                print(f"col {col}")
+                df = df.withColumn(colName=str(col), col=lit(0))
+
+        return df
+
+    def calc_final_result(self, df: DataFrame, year, quarter):
+        final_report_df = df.withColumn(
+            "TOTAL_SCORE",
+            (
+                col("RANK1")
+                + col("RANK2")
+                + col("RANK3")
+                + col("RANK4")
+                + col("RANK5")
+                + col("RANK6")
+                + col("RANK7")
+                + col("RANK8")
+                + col("RANK10")
+                + col("RANK11")
+                + col("RANK14")
+                + col("RANK15")
+            ).alias("TOTAL_SCORE"),
+        )
+        final_report_df = final_report_df.orderBy(col("TOTAL_SCORE").desc())
+        final_report_df = final_report_df.rdd.zipWithIndex().toDF()
+        final_report_df = final_report_df.select(col("_1.*"), col("_2").alias("RANK"))
+        final_report_df.coalesce(1).write.option("header", "true").csv(f"Results/{year}_{quarter}_report")
+        save_df_result = final_report_df.toJSON().map(lambda x: json.loads(x)).collect()
+
+        return save_df_result
         # def seoul_twelve(self, df_spark: DataFrame) -> DataFrame:
         #     # https://data.seoul.go.kr/dataList/OA-15567/S/1/datasetView.do
         #     # 서울시 우리마을가게 상권분석서비스(자치구별 상권변화지표)
@@ -1211,7 +1258,6 @@ class DF(object):
         #         col("서울_폐업_영업_개월_평균").alias("SU_CLS_SALE_MT_AVRG"),
         #     )
 
-        df_spark.show(2)
         #     return df_spark
 
         # def calculate_twelve(self, df_data: DataFrame, quarter : int = 1):
@@ -1280,7 +1326,6 @@ class DF(object):
         #         col("서울_폐업_영업_개월_평균").alias("SU_CLS_SALE_MT_AVRG"),
         #     )
 
-        df_spark.show(2)
         #     return df_spark
 
         # def calculate_thirteen(self, df_data: DataFrame, quarter : int = 1):
@@ -1338,7 +1383,6 @@ class DF(object):
         #         col("경도").alias("LONGITUDE"),
         #     )
 
-        df_spark.show(2)
         #     return df_spark
 
         # def seoul_seventeen(self, df_spark:DataFrame) -> DataFrame:
@@ -1352,7 +1396,6 @@ class DF(object):
         #         col("경도").alias("LONGITUDE"),
         #     )
 
-        df_spark.show(2)
         #     return df_spark
 
         # def seoul_eighteen(self, df_spark:DataFrame) -> DataFrame:
@@ -1365,8 +1408,6 @@ class DF(object):
         #         col("위도").alias("LATITUDE"),
         #         col("경도").alias("LONGITUDE"),
         #     )
-
-        df_spark.show(2)
 
     #     return df_spark
 

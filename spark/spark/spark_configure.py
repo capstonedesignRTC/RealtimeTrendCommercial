@@ -6,11 +6,7 @@ from pyspark import SparkConf
 from pyspark.conf import SparkConf
 from pyspark.sql import DataFrame, SparkSession
 from utils.my_secret import profile_info
-
-# AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
-# AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
-# REGION = os.getenv("REGION")
-# AWS_BUCKET_NAME = os.getenv("AWS_BUCKET_NAME")
+from utils.utils import BUCKET_NAME, REGION
 
 
 class SparkResult(object):
@@ -31,7 +27,7 @@ class SparkS3(object):
     conf.set("spark.hadoop.fs.s3a.secret.key", profile_info["aws_secret_access_key"])
 
     # S3 REGION 설정 ( V4 때문에 필요 )
-    conf.set("spark.hadoop.fs.s3a.endpoint", f"s3.{profile_info['region']}.amazonaws.com")
+    conf.set("spark.hadoop.fs.s3a.endpoint", f"s3.{REGION}.amazonaws.com")
     conf.set("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
     conf.set("spark.hadoop.fs.s3a.path.style.access", True)
 
@@ -44,16 +40,16 @@ class SparkS3(object):
     # conf.set("spark.speculation", False)
 
     spark = None
-    bucket_name = profile_info["aws_bucket_name"]
+    bucket_name = BUCKET_NAME
     s3_client = boto3.client(
         "s3",
         aws_access_key_id=profile_info["aws_access_key_id"],
         aws_secret_access_key=profile_info["aws_secret_access_key"],
     )
 
-    def __init__(self, appname="RTC_SPARK"):
+    def __init__(self):
         logging.error("spark start")
-        self.spark = SparkSession.builder.config(conf=self.conf).appName(appname).master("local[*]").getOrCreate()
+        self.spark = SparkSession.builder.config(conf=self.conf).appName("RTC_SPARK").master("local[*]").getOrCreate()
         self.spark._jsc.hadoopConfiguration().set("com.amazonaws.services.s3.enableV4", "true")
         self.spark._jsc.hadoopConfiguration().set("fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
         self.spark._jsc.hadoopConfiguration().set(

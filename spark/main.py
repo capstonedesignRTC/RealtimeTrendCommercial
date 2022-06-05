@@ -11,7 +11,8 @@ from spark.spark_configure import SparkS3
 
 if __name__ == "__main__":
     logging.error("start spark process")
-    spark = SparkS3()
+
+    spark = SparkS3(sys.argv)
 
     print("===================")
     convert_code_csv = spark.get_file("convert_code.csv")
@@ -22,20 +23,18 @@ if __name__ == "__main__":
     print("===================")
     calculate = Calculate(spark, code_dict)
 
-    city_input, specific_args = None, []
+    calculate.insert_specific_args([])
+
+    logging.error(f"GOT specific_args")
+    result = calculate.calculation_all_founds()
+
+    print("===================")
 
     # for idx, arg in enumerate(sys.argv[1:]):
     #     if idx == 0:
     #         city_input = int(arg)
     #     else:
     #         specific_args.append(str(arg))
-
-    # calculate.insert_specific_args(specific_args)
-
-    logging.error(f"GOT city_input : {city_input} specific_args : {specific_args}")
-    result = calculate.calculation_all_founds()
-
-    print("===================")
 
     # # if city_input is not None:
     # #     if city_input // 10000 == 1:

@@ -133,8 +133,8 @@ class Calculate(object):
 
                         print("data send start")
 
-                        result_df.repartition(1).write.option("header", "true").mode("overwrite").csv(
-                            f"s3a://rtc-result/{num}_{year}_{quarter}_report.csv"
+                        result_df.coalesce(1).write.option("header", "true").csv(
+                            f"s3a://rtc-result/spark/{num}_{year}_{quarter}_report.csv"
                         )
 
                         print("data send end")

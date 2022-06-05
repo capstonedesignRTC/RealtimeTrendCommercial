@@ -34,8 +34,8 @@ class SparkS3(object):
     conf.set("spark.sql.shuffle.partitions", "5")
     conf.set("spark.dynamicAllocation.enabled", "true")
 
-    # conf.set("spark.hadoop.fs.s3a.access.key", profile_info["aws_access_key_id"])
-    # conf.set("spark.hadoop.fs.s3a.secret.key", profile_info["aws_secret_access_key"])
+    conf.set("spark.hadoop.fs.s3a.access.key", profile_info["aws_access_key_id"])
+    conf.set("spark.hadoop.fs.s3a.secret.key", profile_info["aws_secret_access_key"])
     # conf.set("spark.hadoop.fs.s3a.endpoint", f"s3.{REGION}.amazonaws.com")
 
     conf.set("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
@@ -55,11 +55,6 @@ class SparkS3(object):
 
     spark = None
     bucket_name = BUCKET_NAME
-    s3_client = boto3.client(
-        "s3",
-        aws_access_key_id=profile_info["aws_access_key_id"],
-        aws_secret_access_key=profile_info["aws_secret_access_key"],
-    )
 
     def __init__(self):
         logging.error("spark start")
@@ -69,57 +64,11 @@ class SparkS3(object):
         self.spark.stop()
 
     def send_file(self, save_df_result: DataFrame, key: str):
-
         save_df_result.write.option("header", "true").csv(f"s3a://rtc-result/{key}")
-
-        # s3 = boto3.client(
-        #     "s3",
-        #     aws_access_key_id=profile_info["aws_access_key_id"],
-        #     aws_secret_access_key=profile_info["aws_secret_access_key"],
-        # )
-        # s3.put_object(
-        #     Body=json.dumps(save_df_result), Bucket="rtc-result", Key=key,
-        # )
-        # try:
-        #     save_df_result.write.option("header", "true").csv("s3a://{BUCKET_NAME}/{key}")
-        #     print("send file by hadoop")
-
-        # except:
-        #     self.s3_client.put_object(
-        #         Body=json.dumps(save_df_result), Bucket=BUCKET_NAME, Key=key,
-        #     )
-        #     print("send file by boto3")
-
-    # def get_file(self, file_name="test_three.csv") -> DataFrame:
-    #     try:
-    #         file_path = f"Downloads/{file_name}"
-
-    #         if not os.path.exists("Downloads"):
-    #             os.mkdir("Downloads")
-
-    #         print(f"trying {file_name}")
-
-    #         if not os.path.exists(file_path):
-    #             self.s3_client.download_file(Bucket=self.bucket_name, Key=file_name, Filename=file_path)
-
-    #         df_spark = (
-    #             self.spark.read.format("csv")
-    #             .option("encoding", "euc-kr")  #  "utf-8")
-    #             .option("header", True)
-    #             .option("inferSchema", True)
-    #             .csv(file_path)
-    #             .coalesce(1)
-    #         )
-    #         print("load")
-    #         return df_spark
-    #     except:
-    #         logging.error("no file exists")
-    #         return None
 
     def get_file(self, file_name="convert_code.csv") -> DataFrame:
         try:
-
-            file_name = f"s3a://rtc-raw-data/{file_name}"
+            file_name = f"s3a://{self.profile['aws_bucket_name']}/{file_name}"
             print(f"trying {file_name}")
             df_spark = (
                 self.spark.read.format("csv")
@@ -129,7 +78,6 @@ class SparkS3(object):
                 .load(file_name)
                 .coalesce(1)
             )
-
             return df_spark
         except:
             logging.error("no file exists")

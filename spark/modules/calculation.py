@@ -46,7 +46,7 @@ class Calculate(object):
     def update_final_result_df(self, year: int = 2018, quarter: int = 1):
         result = self.df_func.update_result_empty_col(self.result)
         result = self.df_func.calc_final_result(result, year, quarter)
-        self.spark.send_file(result, f"result/{year}_{quarter}_report.json")
+        # self.spark.send_file(result, f"result/{year}_{quarter}_report.json")
 
     def find_city_code(self, code, is_middle=True):
         for big, val1 in self.code_dict.items():
@@ -63,7 +63,7 @@ class Calculate(object):
         years, quarters, funcs = get_sys_args(self.specific_args)
 
         full_dict = {}
-        for year in years:  # 해당 년도 가져오기
+        for year in [2022, 2021, 2020, 2019, 2018]:  # 해당 년도 가져오기
             if year not in full_dict:
                 full_dict[year] = {}
             for quarter in quarters:
@@ -132,14 +132,12 @@ class Calculate(object):
                             continue
 
                         print("data send start")
-                        save_df_result = result_df.toJSON().map(lambda x: json.loads(x)).collect()
-                        result_df.coalesce(1).write.option("header", "true").csv(
-                            f"Results/{num}_{year}_{quarter}_report"
-                        )
-                        self.spark.send_file(save_df_result, f"logs/{num}_{year}_{quarter}_report.json")
+                        # self.spark.send_file(result_df, f"logs/{num}_{year}_{quarter}_report.json")
 
-                        # result_df.rdd.coalesce(1).saveAsTextFile(f"s3://rtc-spark/result/{file_name}.csv")
-                        # result_df.coalesce(1).write.option("header", "true").csv("s3a://rtc-spark/result_three.csv")
+                        result_df.coalesce(1).write.option("header", "true").csv(
+                            f"Results/{num}_{year}_{quarter}_report.csv"
+                        )
+
                         print("data send end")
 
                     except Exception as e:

@@ -80,6 +80,7 @@ class Calculate(object):
         final_report_df = final_report_df.orderBy(col("TOTAL_SCORE").desc())
         final_report_df = final_report_df.rdd.zipWithIndex().toDF()
         final_report_df = final_report_df.select(col("_1.*"), col("_2").alias("RANK"))
+        final_report_df.coalesce(1).write.option("header", "true").csv(f"Results/{year}_{quarter}_report")
         save_df_result = final_report_df.toJSON().map(lambda x: json.loads(x)).collect()
 
         self.spark.send_file(save_df_result, f"result/{year}_{quarter}_report.json")
@@ -124,7 +125,11 @@ class Calculate(object):
                             full_df = part_df_list.pop()
                             while part_df_list:
                                 part_df = part_df_list.pop()
-                                full_df = full_df.union(part_df)
+                                try:
+                                    full_df = full_df.union(part_df)
+                                    print("union success")
+                                except:
+                                    pass
 
                             full_dict[year][quarter][num] = full_df
 
@@ -162,7 +167,9 @@ class Calculate(object):
 
                         print("data send start")
                         save_df_result = result_df.toJSON().map(lambda x: json.loads(x)).collect()
-
+                        result_df.coalesce(1).write.option("header", "true").csv(
+                            f"Results/{num}_{year}_{quarter}_report"
+                        )
                         self.spark.send_file(save_df_result, f"logs/{num}_{year}_{quarter}_report.json")
 
                         # result_df.rdd.coalesce(1).saveAsTextFile(f"s3://rtc-spark/result/{file_name}.csv")

@@ -23,24 +23,27 @@ class SparkS3(object):
     # 기본으로 가져감
     conf = SparkConf()
 
-    # AWS ACCESS KEY 설정
+    conf.set("spark.executor.instances", "8")
+    conf.set("spark.executor.cores", 2)
+    conf.set("spark.shuffle.compress", "true")
+
     conf.set("spark.hadoop.fs.s3a.access.key", profile_info["aws_access_key_id"])
     conf.set("spark.hadoop.fs.s3a.secret.key", profile_info["aws_secret_access_key"])
+    conf.set("spark.hadoop.fs.s3a.endpoint", f"s3.{profile_info['region']}.amazonaws.com")
 
-    conf.set("spark.executor.extraJavaOptions", "-Dcom.amazonaws.services.s3.enableV4=true")
-    conf.set("spark.driver.extraJavaOptions", "-Dcom.amazonaws.services.s3.enableV4=true")
-
-    # S3 REGION 설정 ( V4 때문에 필요 )
-    conf.set("spark.hadoop.fs.s3a.endpoint", f"s3.{REGION}.amazonaws.com")
     conf.set("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
-    conf.set("spark.hadoop.fs.s3a.path.style.access", True)
+    conf.set("spark.hadoop.fs.s3a.path.style.access", "true")
+    conf.set("spark.hadoop.fs.s3a.connection.ssl.enabled", "false")
+    conf.set("spark.hadoop.com.amazonaws.services.s3.enableV2", "true")
+    conf.set("spark.hadoop.fs.s3a.aws.credentials.provider", "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider")
+    conf.set("spark.hadoop.mapreduce.fileoutputcommitter.algorithm.version", 2)
+    # # S3 REGION 설정 ( V4 때문에 필요 )
+    # conf.set("spark.hadoop.fs.s3a.endpoint", f"s3.{REGION}.amazonaws.com")
 
     # 용량이 커서 설정해야 함
     conf.set("spark.hadoop.fs.s3a.multipart.size", 104857600)
     conf.set("spark.sql.debug.maxToStringFields", 1000)
 
-    # conf.set("log4j.logger.org.apache.hadoop.metrics2", "WARN")
-    conf.set("spark.hadoop.mapreduce.fileoutputcommitter.algorithm.version", 2)
     # conf.set("spark.speculation", False)
 
     spark = None
@@ -53,47 +56,28 @@ class SparkS3(object):
 
     def __init__(self):
         logging.error("spark start")
-        self.spark = SparkSession.builder.config(conf=self.conf).appName("RTC_SPARK").master("local[*]").getOrCreate()
-        self.spark._jsc.hadoopConfiguration().set("com.amazonaws.services.s3.enableV4", "true")
+        self.spark = (
+            SparkSession.builder.config(conf=self.conf)
+            .config("fs.s3a.access.key", profile_info["aws_access_key_id"])
+            .config("fs.s3a.access.key", profile_info["aws_secret_access_key"])
+            .appName("RTC_SPARK")
+            .master("local[*]")
+            .getOrCreate()
+        )
+
         self.spark._jsc.hadoopConfiguration().set("fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
         self.spark._jsc.hadoopConfiguration().set(
             "fs.s3a.aws.credentials.provider",
             "com.amazonaws.auth.InstanceProfileCredentialsProvider,com.amazonaws.auth.DefaultAWSCredentialsProviderChain",
         )
-        self.spark._jsc.hadoopConfiguration().set("fs.AbstractFileSystem.s3a.impl", "org.apache.hadoop.fs.s3a.S3A")
-        self.spark._jsc.hadoopConfiguration().set("fs.s3a.access.key", profile_info["aws_access_key_id"])
-        self.spark._jsc.hadoopConfiguration().set("fs.s3a.secret.key", profile_info["aws_secret_access_key"])
-        self.spark._jsc.hadoopConfiguration().set("fs.s3a.endpoint", f"s3.{REGION}.amazonaws.com")
-        self.spark._jsc.hadoopConfiguration().set("fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
+        # self.spark._jsc.hadoopConfiguration().set("fs.AbstractFileSystem.s3a.impl", "org.apache.hadoop.fs.s3a.S3A")
+        # self.spark._jsc.hadoopConfiguration().set("fs.s3a.access.key", profile_info["aws_access_key_id"])
+        # self.spark._jsc.hadoopConfiguration().set("fs.s3a.secret.key", profile_info["aws_secret_access_key"])
+        # self.spark._jsc.hadoopConfiguration().set("fs.s3a.endpoint", f"s3.{REGION}.amazonaws.com")
+        # self.spark._jsc.hadoopConfiguration().set("fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
 
     def stop_spark(self):
         self.spark.stop()
-
-    # def get_file(self, file_name="test_three.csv") -> DataFrame:
-    #     try:
-    #         file_path = f"Downloads/{file_name}"
-
-    #         if not os.path.exists("Downloads"):
-    #             os.mkdir("Downloads")
-
-    #         if not os.path.exists(file_path):
-    #             self.s3_client.download_file(Bucket=self.bucket_name, Key=file_name, Filename=file_path)
-
-    #         df_spark = (
-    #             self.spark.read.format("csv")
-    #             .option("encoding", "euc-kr")  #  "utf-8")
-    #             .option("header", True)
-    #             .option("inferSchema", True)
-    #             .csv(file_path)
-    #             .coalesce(1)
-    #         )
-
-    #         # df_spark = df_spark.limit(10)
-    #         # os.remove(file_path)
-    #         return df_spark
-    #     except:
-    #         logging.error("no file exists")
-    #         return None
 
     def get_file(self, file_name="convert_code.csv") -> DataFrame:
         try:
@@ -123,3 +107,30 @@ class SparkS3(object):
                 Body=json.dumps(save_df_result), Bucket=BUCKET_NAME, Key=key,
             )
             print("send file by boto3")
+
+    # def get_file(self, file_name="test_three.csv") -> DataFrame:
+    #     try:
+    #         file_path = f"Downloads/{file_name}"
+
+    #         if not os.path.exists("Downloads"):
+    #             os.mkdir("Downloads")
+
+    #         if not os.path.exists(file_path):
+    #             self.s3_client.download_file(Bucket=self.bucket_name, Key=file_name, Filename=file_path)
+
+    #         df_spark = (
+    #             self.spark.read.format("csv")
+    #             .option("encoding", "euc-kr")  #  "utf-8")
+    #             .option("header", True)
+    #             .option("inferSchema", True)
+    #             .csv(file_path)
+    #             .coalesce(1)
+    #         )
+
+    #         # df_spark = df_spark.limit(10)
+    #         # os.remove(file_path)
+    #         return df_spark
+    #     except:
+    #         logging.error("no file exists")
+    #         return None
+

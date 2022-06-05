@@ -120,7 +120,6 @@ class Calculate(object):
                                     break
                                 page += 1
                                 part_df_list.append(df_spark)
-                                return
 
                             full_df = part_df_list.pop()
                             while part_df_list:

@@ -1,7 +1,7 @@
 import logging
 import sys
 
-from modules.caculation import Calculate
+from modules.calculation import Calculate
 from modules.dataframe import get_sk_code_to_hjd_code
 from spark.spark_configure import SparkS3
 

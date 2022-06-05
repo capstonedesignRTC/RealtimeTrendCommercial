@@ -22,11 +22,17 @@ class SparkResult(object):
 class SparkS3(object):
     # 기본으로 가져감
     conf = SparkConf()
-
-    conf.set("spark.executor.instances", 8)  # num-executors
-    conf.set("spark.executor.cores", 4)
+    conf.set("spark.driver.memory", "14g")
+    conf.set("spark.executor.memory", "14g")
     conf.set("spark.shuffle.compress", "true")
-    conf.set("spark.sql.shuffle.partitions", 5)
+    conf.set("spark.sql.shuffle.partitions", 100)
+
+    conf.set("spark.executor.instances", "8")  # num-executors
+    conf.set("spark.executor.cores", "3")
+
+    conf.set("spark.shuffle.compress", "true")
+    conf.set("spark.sql.shuffle.partitions", "5")
+    conf.set("spark.dynamicAllocation.enabled", "true")
 
     # conf.set("spark.hadoop.fs.s3a.access.key", profile_info["aws_access_key_id"])
     # conf.set("spark.hadoop.fs.s3a.secret.key", profile_info["aws_secret_access_key"])

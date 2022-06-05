@@ -61,7 +61,7 @@ class SparkS3(object):
 
     def get_file(self, file_name="convert_code.csv") -> DataFrame:
         try:
-            file_name = f"s3a://{self.send_bucket}/{file_name}"
+            file_name = f"s3://{self.send_bucket}/{file_name}"
 
             print(f"trying {file_name}")
             df_spark = (

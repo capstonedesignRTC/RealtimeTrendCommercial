@@ -56,14 +56,7 @@ class SparkS3(object):
 
     def __init__(self):
         logging.error("spark start")
-        self.spark = (
-            SparkSession.builder.config(conf=self.conf)
-            .config("fs.s3a.access.key", profile_info["aws_access_key_id"])
-            .config("fs.s3a.access.key", profile_info["aws_secret_access_key"])
-            .appName("RTC_SPARK")
-            .master("local[*]")
-            .getOrCreate()
-        )
+        self.spark = SparkSession.builder.config(conf=self.conf).appName("RTC_SPARK").master("local[*]").getOrCreate()
 
         self.spark._jsc.hadoopConfiguration().set("fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
         self.spark._jsc.hadoopConfiguration().set(
@@ -103,7 +96,7 @@ class SparkS3(object):
             print("send file by hadoop")
 
         except:
-            self.spark.s3_client.put_object(
+            self.s3_client.put_object(
                 Body=json.dumps(save_df_result), Bucket=BUCKET_NAME, Key=key,
             )
             print("send file by boto3")
@@ -114,6 +107,8 @@ class SparkS3(object):
 
             if not os.path.exists("Downloads"):
                 os.mkdir("Downloads")
+
+            print(f"trying {file_name}")
 
             if not os.path.exists(file_path):
                 self.s3_client.download_file(Bucket=self.bucket_name, Key=file_name, Filename=file_path)

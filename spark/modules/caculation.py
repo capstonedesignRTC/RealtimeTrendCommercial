@@ -82,9 +82,7 @@ class Calculate(object):
         final_report_df = final_report_df.select(col("_1.*"), col("_2").alias("RANK"))
         save_df_result = final_report_df.toJSON().map(lambda x: json.loads(x)).collect()
 
-        self.spark.s3_client.put_object(
-            Body=json.dumps(save_df_result), Bucket=BUCKET_NAME, Key=f"result/{year}_{quarter}_report.json",
-        )
+        self.spark.send_file(save_df_result, f"result/{year}_{quarter}_report.json")
 
     def find_city_code(self, code, is_middle=True):
         for big, val1 in self.code_dict.items():
@@ -122,6 +120,7 @@ class Calculate(object):
                                     break
                                 page += 1
                                 part_df_list.append(df_spark)
+                                return
 
                             full_df = part_df_list.pop()
                             while part_df_list:
@@ -164,11 +163,9 @@ class Calculate(object):
 
                         print("data send start")
                         save_df_result = result_df.toJSON().map(lambda x: json.loads(x)).collect()
-                        self.spark.s3_client.put_object(
-                            Body=json.dumps(save_df_result),
-                            Bucket=BUCKET_NAME,
-                            Key=f"logs/{num}_{year}_{quarter}_report.json",
-                        )
+
+                        self.spark.send_file(save_df_result, f"logs/{num}_{year}_{quarter}_report.json")
+
                         # result_df.rdd.coalesce(1).saveAsTextFile(f"s3://rtc-spark/result/{file_name}.csv")
                         # result_df.coalesce(1).write.option("header", "true").csv("s3a://rtc-spark/result_three.csv")
                         print("data send end")

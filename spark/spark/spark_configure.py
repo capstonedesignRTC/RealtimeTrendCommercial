@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 
@@ -26,6 +27,9 @@ class SparkS3(object):
     conf.set("spark.hadoop.fs.s3a.access.key", profile_info["aws_access_key_id"])
     conf.set("spark.hadoop.fs.s3a.secret.key", profile_info["aws_secret_access_key"])
 
+    conf.set("spark.executor.extraJavaOptions", "-Dcom.amazonaws.services.s3.enableV4=true")
+    conf.set("spark.driver.extraJavaOptions", "-Dcom.amazonaws.services.s3.enableV4=true")
+
     # S3 REGION 설정 ( V4 때문에 필요 )
     conf.set("spark.hadoop.fs.s3a.endpoint", f"s3.{REGION}.amazonaws.com")
     conf.set("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
@@ -36,7 +40,7 @@ class SparkS3(object):
     conf.set("spark.sql.debug.maxToStringFields", 1000)
 
     # conf.set("log4j.logger.org.apache.hadoop.metrics2", "WARN")
-    # conf.set("spark.hadoop.mapreduce.fileoutputcommitter.algorithm.version", 2)
+    conf.set("spark.hadoop.mapreduce.fileoutputcommitter.algorithm.version", 2)
     # conf.set("spark.speculation", False)
 
     spark = None
@@ -57,40 +61,47 @@ class SparkS3(object):
             "com.amazonaws.auth.InstanceProfileCredentialsProvider,com.amazonaws.auth.DefaultAWSCredentialsProviderChain",
         )
         self.spark._jsc.hadoopConfiguration().set("fs.AbstractFileSystem.s3a.impl", "org.apache.hadoop.fs.s3a.S3A")
+        self.spark._jsc.hadoopConfiguration().set("fs.s3a.access.key", profile_info["aws_access_key_id"])
+        self.spark._jsc.hadoopConfiguration().set("fs.s3a.secret.key", profile_info["aws_secret_access_key"])
+        self.spark._jsc.hadoopConfiguration().set("fs.s3a.endpoint", f"s3.{REGION}.amazonaws.com")
+        self.spark._jsc.hadoopConfiguration().set("fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
 
     def stop_spark(self):
         self.spark.stop()
 
-    def get_file(self, file_name="test_three.csv") -> DataFrame:
-        try:
-            file_path = f"Downloads/{file_name}"
+    # def get_file(self, file_name="test_three.csv") -> DataFrame:
+    #     try:
+    #         file_path = f"Downloads/{file_name}"
 
-            if not os.path.exists(file_path):
-                self.s3_client.download_file(Bucket=self.bucket_name, Key=file_name, Filename=file_path)
+    #         if not os.path.exists("Downloads"):
+    #             os.mkdir("Downloads")
 
-            df_spark = (
-                self.spark.read.format("csv")
-                .option("encoding", "euc-kr")  #  "utf-8")
-                .option("header", True)
-                .option("inferSchema", True)
-                .csv(file_path)
-                .coalesce(1)
-            )
+    #         if not os.path.exists(file_path):
+    #             self.s3_client.download_file(Bucket=self.bucket_name, Key=file_name, Filename=file_path)
 
-            # df_spark = df_spark.limit(10)
-            # os.remove(file_path)
-            return df_spark
-        except:
-            logging.error("no file exists")
-            return None
+    #         df_spark = (
+    #             self.spark.read.format("csv")
+    #             .option("encoding", "euc-kr")  #  "utf-8")
+    #             .option("header", True)
+    #             .option("inferSchema", True)
+    #             .csv(file_path)
+    #             .coalesce(1)
+    #         )
 
-    def get_file_s3a(self, file_name="convert_code.csv") -> DataFrame:
+    #         # df_spark = df_spark.limit(10)
+    #         # os.remove(file_path)
+    #         return df_spark
+    #     except:
+    #         logging.error("no file exists")
+    #         return None
+
+    def get_file(self, file_name="convert_code.csv") -> DataFrame:
         try:
             file_name = f"s3a://{self.bucket_name}/{file_name}"
-
+            print(f"trying {file_name}")
             df_spark = (
                 self.spark.read.format("csv")
-                .option("encoding", "utf-8")  # "euc-kr"
+                .option("encoding", "euc-kr")
                 .option("header", True)
                 .option("inferSchema", False)
                 .load(file_name)
@@ -101,3 +112,14 @@ class SparkS3(object):
         except:
             logging.error("no file exists")
             return None
+
+    def send_file(self, save_df_result: DataFrame, key: str):
+        try:
+            save_df_result.write.option("header", "true").csv("s3a://{BUCKET_NAME}/{key}")
+            print("send file by hadoop")
+
+        except:
+            self.spark.s3_client.put_object(
+                Body=json.dumps(save_df_result), Bucket=BUCKET_NAME, Key=key,
+            )
+            print("send file by boto3")

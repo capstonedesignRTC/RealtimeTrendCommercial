@@ -1,4 +1,2 @@
-findspark
-pandas
 pyspark
 boto3

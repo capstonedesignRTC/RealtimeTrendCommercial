@@ -1,9 +1,5 @@
-import sys
-
-import findspark
-
-findspark.init()
 import logging
+import sys
 
 from modules.caculation import Calculate
 from modules.dataframe import get_sk_code_to_hjd_code
@@ -36,24 +32,24 @@ if __name__ == "__main__":
     #     else:
     #         specific_args.append(str(arg))
 
-    # # if city_input is not None:
-    # #     if city_input // 10000 == 1:
-    # #         print("big")
-    # #         """big code만 필요"""
-    # #         result = calculate.calculation_big_cities(city_input)
-    # #     elif city_input // 10000000 == 1:
-    # #         print("middle")
-    # #         """big code도 필요"""
-    # #         big = calculate.find_city_code(city_input, True)
-    # #         result = calculate.calculation_middle_cities(big, city_input)
-    # #     else:
-    # #         """big, middle code도 필요"""
-    # #         print("small")
-    # #         big, middle = calculate.find_city_code(city_input, False)
-    # #         result = calculate.calculation_small_cities(big, middle, city_input)
-    # # else:
-    # #     print("all")
-    # #     result = calculate.calculation_all_cities()
+    # if city_input is not None:
+    #     if city_input // 10000 == 1:
+    #         print("big")
+    #         """big code만 필요"""
+    #         result = calculate.calculation_big_cities(city_input)
+    #     elif city_input // 10000000 == 1:
+    #         print("middle")
+    #         """big code도 필요"""
+    #         big = calculate.find_city_code(city_input, True)
+    #         result = calculate.calculation_middle_cities(big, city_input)
+    #     else:
+    #         """big, middle code도 필요"""
+    #         print("small")
+    #         big, middle = calculate.find_city_code(city_input, False)
+    #         result = calculate.calculation_small_cities(big, middle, city_input)
+    # else:
+    #     print("all")
+    #     result = calculate.calculation_all_cities()
 
     # print("===================")
 

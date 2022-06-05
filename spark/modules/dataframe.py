@@ -43,8 +43,8 @@ class DF(object):
         [
             StructField("STDR_YY_CD", IntegerType(), nullable=False),
             StructField("STDR_QU_CD", IntegerType(), nullable=False),
-            StructField("SIGNGU_CD", IntegerType(), nullable=False),
-            StructField("ADSTRD_CD", IntegerType(), nullable=False),
+            # StructField("SIGNGU_CD", IntegerType(), nullable=False),
+            # StructField("ADSTRD_CD", IntegerType(), nullable=False),
             StructField("TRDAR_CD", IntegerType(), nullable=False),
             # StructField("RANK1", IntegerType(), nullable=True),
             # StructField("RANK2", IntegerType(), nullable=True),
@@ -128,24 +128,28 @@ class DF(object):
         # df_spark.show(8)
         return df_spark
 
-    def calculate_one(self, df_data: DataFrame):
+    def calculate_one(self, df_data: DataFrame, quarter: int = 1):
         logging.error("calculate_one start")
         df_data.createOrReplaceTempView("df")
+
+        df_data = df_data.filter(col("STDR_QU_CD") == quarter)
+        if df_data.rdd.isEmpty():
+            return None
 
         """
         방법 1
         총 인구, 20대, 토요일, 일요일
         """
         df_data_one = df_data.select(
-            col("STDR_YY_CD"),  # 기준 년 코드
-            col("STDR_QU_CD"),  # 기준 분기 코드
-            col("TRDAR_CD"),  # 상권_코드
+            col("STDR_YY_CD"),
+            col("STDR_QU_CD"),
+            col("TRDAR_CD"),
             col("TOT_FLPOP_CO"),
             col("AGRDE_20_FLPOP_CO"),
             col("SAT_FLPOP_CO"),
-            col("SUN_FLPOP_CO"),
+            col("SUN_FLPOP_CO"),  # 기준 년 코드  # 기준 분기 코드  # 상권_코드
         )
-        df_one = df_data_one.orderBy(
+        df_one = df_data_one.orderBy(  # 애초에 정렬을 다음과 같이 진행
             col("TOT_FLPOP_CO").desc(),
             col("AGRDE_20_FLPOP_CO").desc(),
             col("SAT_FLPOP_CO").desc(),
@@ -161,13 +165,13 @@ class DF(object):
         여성 인구, 30대, 40대, 총_생활인구_수
         """
         df_data_two = df_data.select(
-            col("STDR_YY_CD"),  # 기준 년 코드
-            col("STDR_QU_CD"),  # 기준 분기 코드
+            col("STDR_YY_CD"),
+            col("STDR_QU_CD"),
             col("TRDAR_CD"),
             col("FML_FLPOP_CO"),
             col("AGRDE_30_FLPOP_CO"),
             col("AGRDE_40_FLPOP_CO"),
-            col("TOT_FLPOP_CO"),
+            col("TOT_FLPOP_CO"),  # 기준 년 코드  # 기준 분기 코드
         )
         df_two = df_data_two.orderBy(
             col("FML_FLPOP_CO").desc(),
@@ -222,21 +226,24 @@ class DF(object):
 
         return df_spark
 
-    def calculate_two(self, df_data: DataFrame):
+    def calculate_two(self, df_data: DataFrame, quarter: int = 1):
         logging.error("calculate_two start")
         df_data.createOrReplaceTempView("df")
 
+        df_data = df_data.filter(col("STDR_QU_CD") == quarter)
+        if df_data.rdd.isEmpty():
+            return None
         """
         방법 1
         총_직장_인구_수, 연령대_30_직장_인구_수, 연령대_40_직장_인구_수
         """
         df_data_one = df_data.select(
-            col("STDR_YY_CD"),  # 기준 년 코드
-            col("STDR_QU_CD"),  # 기준 분기 코드
-            col("TRDAR_CD"),  # 상권_코드
+            col("STDR_YY_CD"),
+            col("STDR_QU_CD"),
+            col("TRDAR_CD"),
             col("TOT_WRC_POPLTN_CO"),
             col("AGRDE_30_WRC_POPLTN_CO"),
-            col("AGRDE_40_WRC_POPLTN_CO"),
+            col("AGRDE_40_WRC_POPLTN_CO"),  # 기준 년 코드  # 기준 분기 코드  # 상권_코드
         )
         df_one = df_data_one.orderBy(
             col("TOT_WRC_POPLTN_CO").desc(), col("AGRDE_30_WRC_POPLTN_CO").desc(), col("AGRDE_40_WRC_POPLTN_CO").desc(),
@@ -251,12 +258,12 @@ class DF(object):
         남성_직장_인구_수, 연령대_40_직장_인구_수, 연령대_50_직장_인구_수
         """
         df_data_two = df_data.select(
-            col("STDR_YY_CD"),  # 기준 년 코드
-            col("STDR_QU_CD"),  # 기준 분기 코드
+            col("STDR_YY_CD"),
+            col("STDR_QU_CD"),
             col("TRDAR_CD"),
             col("ML_WRC_POPLTN_CO"),
             col("AGRDE_40_WRC_POPLTN_CO"),
-            col("AGRDE_50_WRC_POPLTN_CO"),
+            col("AGRDE_50_WRC_POPLTN_CO"),  # 기준 년 코드  # 기준 분기 코드
         )
         df_two = df_data_two.orderBy(
             col("ML_WRC_POPLTN_CO").desc(), col("AGRDE_40_WRC_POPLTN_CO").desc(), col("AGRDE_50_WRC_POPLTN_CO").desc(),
@@ -316,22 +323,25 @@ class DF(object):
 
         return df_spark
 
-    def calculate_three(self, df_data: DataFrame):  # , big: int, middle: int, small: int):
+    def calculate_three(self, df_data: DataFrame, quarter: int = 1):  # , big: int, middle: int, small: int):
         logging.error("calculate_three start")
         df_data.createOrReplaceTempView("df")
 
+        df_data = df_data.filter(col("STDR_QU_CD") == quarter)
+        if df_data.rdd.isEmpty():
+            return None
         """
         방법 1
         총 인구, 20대, 토요일, 일요일
         """
         df_data_one = df_data.select(
-            col("STDR_YY_CD"),  # 기준 년 코드
-            col("STDR_QU_CD"),  # 기준 분기 코드
+            col("STDR_YY_CD"),
+            col("STDR_QU_CD"),
             col("TRDAR_CD"),
             col("TOT_FLPOP_CO"),
             col("AGRDE_20_FLPOP_CO"),
             col("SAT_FLPOP_CO"),
-            col("SUN_FLPOP_CO"),
+            col("SUN_FLPOP_CO"),  # 기준 년 코드  # 기준 분기 코드
         )
         df_one = df_data_one.orderBy(
             col("TOT_FLPOP_CO").desc(),
@@ -349,13 +359,13 @@ class DF(object):
         여성 인구, 30대, 40대, 총_생활인구_수
         """
         df_data_two = df_data.select(
-            col("STDR_YY_CD"),  # 기준 년 코드
-            col("STDR_QU_CD"),  # 기준 분기 코드
+            col("STDR_YY_CD"),
+            col("STDR_QU_CD"),
             col("TRDAR_CD"),
             col("FML_FLPOP_CO"),
             col("AGRDE_30_FLPOP_CO"),
             col("AGRDE_40_FLPOP_CO"),
-            col("TOT_FLPOP_CO"),
+            col("TOT_FLPOP_CO"),  # 기준 년 코드  # 기준 분기 코드
         )
         df_two = df_data_two.orderBy(
             col("FML_FLPOP_CO").desc(),
@@ -410,21 +420,25 @@ class DF(object):
 
         return df_spark
 
-    def calculate_four(self, df_data: DataFrame):
+    def calculate_four(self, df_data: DataFrame, quarter: int = 1):
         logging.error("calculate_two start")
         df_data.createOrReplaceTempView("df")
+
+        df_data = df_data.filter(col("STDR_QU_CD") == quarter)
+        if df_data.rdd.isEmpty():
+            return None
 
         """
         방법 1
         총_직장_인구_수, 연령대_30_직장_인구_수, 연령대_40_직장_인구_수
         """
         df_data_one = df_data.select(
-            col("STDR_YY_CD"),  # 기준 년 코드
-            col("STDR_QU_CD"),  # 기준 분기 코드
-            col("TRDAR_CD"),  # 상권_코드
+            col("STDR_YY_CD"),
+            col("STDR_QU_CD"),
+            col("TRDAR_CD"),
             col("TOT_WRC_POPLTN_CO"),
             col("AGRDE_30_WRC_POPLTN_CO"),
-            col("AGRDE_40_WRC_POPLTN_CO"),
+            col("AGRDE_40_WRC_POPLTN_CO"),  # 기준 년 코드  # 기준 분기 코드  # 상권_코드
         )
         df_one = df_data_one.orderBy(
             col("TOT_WRC_POPLTN_CO").desc(), col("AGRDE_30_WRC_POPLTN_CO").desc(), col("AGRDE_40_WRC_POPLTN_CO").desc(),
@@ -439,12 +453,12 @@ class DF(object):
         남성_직장_인구_수, 연령대_40_직장_인구_수, 연령대_50_직장_인구_수
         """
         df_data_two = df_data.select(
-            col("STDR_YY_CD"),  # 기준 년 코드
-            col("STDR_QU_CD"),  # 기준 분기 코드
+            col("STDR_YY_CD"),
+            col("STDR_QU_CD"),
             col("TRDAR_CD"),
             col("ML_WRC_POPLTN_CO"),
             col("AGRDE_40_WRC_POPLTN_CO"),
-            col("AGRDE_50_WRC_POPLTN_CO"),
+            col("AGRDE_50_WRC_POPLTN_CO"),  # 기준 년 코드  # 기준 분기 코드
         )
         df_two = df_data_two.orderBy(
             col("ML_WRC_POPLTN_CO").desc(), col("AGRDE_40_WRC_POPLTN_CO").desc(), col("AGRDE_50_WRC_POPLTN_CO").desc(),
@@ -500,22 +514,26 @@ class DF(object):
 
         return df_spark
 
-    def calculate_five(self, df_data: DataFrame):
+    def calculate_five(self, df_data: DataFrame, quarter: int = 1):
         logging.error("calculate_five start")
         df_data.createOrReplaceTempView("df")
+
+        df_data = df_data.filter(col("STDR_QU_CD") == quarter)
+        if df_data.rdd.isEmpty():
+            return None
 
         """
         방법 1
         총 상주인구 수, 연령대 30 상주인구 수, 연령대 40 상주인구 수
         """
         df_data_one = df_data.select(
-            col("STDR_YY_CD"),  # 기준 년 코드
-            col("STDR_QU_CD"),  # 기준 분기 코드
-            col("TRDAR_CD"),  # 상권_코드
+            col("STDR_YY_CD"),
+            col("STDR_QU_CD"),
+            col("TRDAR_CD"),
             col("TOT_REPOP_CO"),
             col("AGRDE_30_REPOP_CO"),
             col("AGRDE_40_REPOP_CO"),
-        )
+        )  # 기준 년 코드  # 기준 분기 코드  # 상권_코드
         df_one = df_data_one.orderBy(
             col("TOT_REPOP_CO").desc(), col("AGRDE_30_REPOP_CO").desc(), col("AGRDE_40_REPOP_CO").desc(),
         )
@@ -529,13 +547,13 @@ class DF(object):
         총 가구 수, 아파트 가구 수, 비 아파트 가구 수
         """
         df_data_two = df_data.select(
-            col("STDR_YY_CD"),  # 기준 년 코드
-            col("STDR_QU_CD"),  # 기준 분기 코드
+            col("STDR_YY_CD"),
+            col("STDR_QU_CD"),
             col("TRDAR_CD"),
             col("TOT_HSHLD_CO"),
             col("APT_HSHLD_CO"),
             col("NON_APT_HSHLD_CO"),
-        )
+        )  # 기준 년 코드  # 기준 분기 코드
         df_two = df_data_two.orderBy(
             col("TOT_HSHLD_CO").desc(), col("APT_HSHLD_CO").desc(), col("NON_APT_HSHLD_CO").desc(),
         )
@@ -588,30 +606,37 @@ class DF(object):
 
         return df_spark
 
-    def calculate_six(self, df_data: DataFrame):
+    def calculate_six(self, df_data: DataFrame, quarter: int = 1):
         logging.error("calculate_six start")
         df_data.createOrReplaceTempView("df")
+
+        df_data = df_data.filter(col("STDR_QU_CD") == quarter)
+        if df_data.rdd.isEmpty():
+            return None
 
         """
         방법 1
         월_평균_소득_금액, 지출_총금액, 소득_구간_코드
         """
         df_data_one = df_data.select(
-            col("STDR_YY_CD"),  # 기준 년 코드
-            col("STDR_QU_CD"),  # 기준 분기 코드
-            col("TRDAR_CD"),  # 상권_코드
+            col("STDR_YY_CD"),
+            col("STDR_QU_CD"),
+            col("TRDAR_CD"),
             col("MT_AVRG_INCOME_AMT"),
             col("EXPNDTR_TOTAMT"),
             col("INCOME_SCTN_CD"),
         )
         df_one = df_data_one.orderBy(
-            col("INCOME_SCTN_CD").asc(), col("EXPNDTR_TOTAMT").asc(), col("MT_AVRG_INCOME_AMT").asc()
+            col("INCOME_SCTN_CD").asc(),
+            col("EXPNDTR_TOTAMT").asc(),
+            col("MT_AVRG_INCOME_AMT").asc()
+            # col("MT_AVRG_INCOME_AMT").desc(), col("EXPNDTR_TOTAMT").desc(), col("INCOME_SCTN_CD").desc()
         )
 
         result = df_one.rdd.zipWithIndex().toDF()
         df_one.drop()
         result = result.select(col("_1.*"), col("_2").alias("RANK6"))
-        result = result.select(col("STDR_YY_CD"), col("STDR_QU_CD"), col("TRDAR_CD"), col("RANK6"),)
+        result = result.select(col("STDR_YY_CD"), col("STDR_QU_CD"), col("TRDAR_CD"), col("RANK6"))
 
         result.show(10)
 
@@ -627,7 +652,7 @@ class DF(object):
             col("STDR_YY_CD"),  # col("기준_년_코드").alias("STDR_YY_CD"),
             col("STDR_QU_CD"),  # col("기준_분기_코드").alias("STDR_QU_CD"),
             col("TRDAR_CD"),  # col("상권_코드").alias("TRDAR_CD"),
-            # col("SVC_INDUTY_CD"),  #  col("서비스_업종_코드").alias("SVC_INDUTY_CD"),  # THSMON_SELNG_AMT,  THSMON_SELNG_CO
+            col("SVC_INDUTY_CD"),  #  col("서비스_업종_코드").alias("SVC_INDUTY_CD"),  # THSMON_SELNG_AMT,  THSMON_SELNG_CO
             # 비율
             col("MDWK_SELNG_RATE"),  # col("주중_매출_비율").alias("MDWK_SELNG_RATE"),
             col("WKEND_SELNG_RATE"),  # col("주말_매출_비율").alias("WKEND_SELNG_RATE"),
@@ -668,21 +693,22 @@ class DF(object):
 
         return df_spark
 
-    def calculate_seven(self, df_data: DataFrame):
+    def calculate_seven(self, df_data: DataFrame, quarter: int = 1, service: str = "CS100001"):
         logging.error("calculate_seven start")
         df_data.createOrReplaceTempView("df")
+
+        df_data = df_data.where((col("STDR_QU_CD") == quarter) & (col("SVC_INDUTY_CD") == service))
+        if df_data.rdd.isEmpty():
+            return None
 
         """
         방법 1
         주중_매출_비율, 주말_매출_비율
         """
+
         df_data_one = df_data.select(
-            col("STDR_YY_CD"),  # 기준 년 코드
-            col("STDR_QU_CD"),  # 기준 분기 코드
-            col("TRDAR_CD"),  # 상권_코드
-            col("MDWK_SELNG_RATE"),
-            col("WKEND_SELNG_RATE"),
-        )
+            col("STDR_YY_CD"), col("STDR_QU_CD"), col("TRDAR_CD"), col("MDWK_SELNG_RATE"), col("WKEND_SELNG_RATE"),
+        )  # 기준 년 코드  # 기준 분기 코드  # 상권_코드
         df_one = df_data_one.orderBy(col("MDWK_SELNG_RATE").desc(), col("WKEND_SELNG_RATE").desc(),)
 
         df_one = df_one.rdd.zipWithIndex().toDF()
@@ -719,8 +745,8 @@ class DF(object):
             col("STDR_YY_CD"),
             col("STDR_QU_CD"),
             col("TRDAR_CD"),
-            (col("ML_SELNG_AMT") / col("ML_SELNG_CO")).alias("ml_amt_per_co"),  # # 컬럼끼리 나눠 계산
-        )
+            (col("ML_SELNG_AMT") / col("ML_SELNG_CO")).alias("ml_amt_per_co"),
+        )  # # 컬럼끼리 나눠 계산
 
         df_three = df_data_three.orderBy(col("ml_amt_per_co").desc())
 
@@ -736,8 +762,8 @@ class DF(object):
             col("STDR_YY_CD"),
             col("STDR_QU_CD"),
             col("TRDAR_CD"),
-            (col("FML_SELNG_AMT") / col("FML_SELNG_CO")).alias("fml_amt_per_co"),  # # 컬럼끼리 나눠 계산
-        )
+            (col("FML_SELNG_AMT") / col("FML_SELNG_CO")).alias("fml_amt_per_co"),
+        )  # # 컬럼끼리 나눠 계산
 
         df_four = df_data_four.orderBy(col("fml_amt_per_co").desc())
 
@@ -775,7 +801,7 @@ class DF(object):
             col("STDR_YY_CD"),  # col("기준_년_코드").alias("STDR_YY_CD"),
             col("STDR_QU_CD"),  # col("기준_분기_코드").alias("STDR_QU_CD"),
             col("TRDAR_CD"),  # col("상권_코드").alias("TRDAR_CD"),
-            # col("SVC_INDUTY_CD"),  #  col("서비스_업종_코드").alias("SVC_INDUTY_CD"),  # THSMON_SELNG_AMT,  THSMON_SELNG_CO
+            col("SVC_INDUTY_CD"),  #  col("서비스_업종_코드").alias("SVC_INDUTY_CD"),  # THSMON_SELNG_AMT,  THSMON_SELNG_CO
             # 비율
             col("MDWK_SELNG_RATE"),  # col("주중_매출_비율").alias("MDWK_SELNG_RATE"),
             col("WKEND_SELNG_RATE"),  # col("주말_매출_비율").alias("WKEND_SELNG_RATE"),
@@ -816,21 +842,22 @@ class DF(object):
 
         return df_spark
 
-    def calculate_eight(self, df_data: DataFrame):
+    def calculate_eight(self, df_data: DataFrame, quarter: int = 1, service: str = "CS100001"):
         logging.error("calculate_eight start")
         df_data.createOrReplaceTempView("df")
+
+        df_data = df_data.where((col("STDR_QU_CD") == quarter) & (col("SVC_INDUTY_CD") == service))
+        if df_data.rdd.isEmpty():
+            return None
 
         """
         방법 1
         주중_매출_비율, 주말_매출_비율
         """
+
         df_data_one = df_data.select(
-            col("STDR_YY_CD"),  # 기준 년 코드
-            col("STDR_QU_CD"),  # 기준 분기 코드
-            col("TRDAR_CD"),  # 상권_코드
-            col("MDWK_SELNG_RATE"),
-            col("WKEND_SELNG_RATE"),
-        )
+            col("STDR_YY_CD"), col("STDR_QU_CD"), col("TRDAR_CD"), col("MDWK_SELNG_RATE"), col("WKEND_SELNG_RATE"),
+        )  # 기준 년 코드  # 기준 분기 코드  # 상권_코드
         df_one = df_data_one.orderBy(col("MDWK_SELNG_RATE").desc(), col("WKEND_SELNG_RATE").desc(),)
 
         df_one = df_one.rdd.zipWithIndex().toDF()
@@ -867,8 +894,8 @@ class DF(object):
             col("STDR_YY_CD"),
             col("STDR_QU_CD"),
             col("TRDAR_CD"),
-            (col("ML_SELNG_AMT") / col("ML_SELNG_CO")).alias("ml_amt_per_co"),  # # 컬럼끼리 나눠 계산
-        )
+            (col("ML_SELNG_AMT") / col("ML_SELNG_CO")).alias("ml_amt_per_co"),
+        )  # # 컬럼끼리 나눠 계산
 
         df_three = df_data_three.orderBy(col("ml_amt_per_co").desc())
 
@@ -884,8 +911,8 @@ class DF(object):
             col("STDR_YY_CD"),
             col("STDR_QU_CD"),
             col("TRDAR_CD"),
-            (col("FML_SELNG_AMT") / col("FML_SELNG_CO")).alias("fml_amt_per_co"),  # # 컬럼끼리 나눠 계산
-        )
+            (col("FML_SELNG_AMT") / col("FML_SELNG_CO")).alias("fml_amt_per_co"),
+        )  # # 컬럼끼리 나눠 계산
 
         df_four = df_data_four.orderBy(col("fml_amt_per_co").desc())
 
@@ -947,28 +974,26 @@ class DF(object):
 
         return df_spark
 
-    def calculate_ten(self, df_data: DataFrame):
+    def calculate_ten(self, df_data: DataFrame, quarter: int = 1):
         logging.error("calculate_ten start")
-
         df_data.createOrReplaceTempView("df")
 
+        df_data = df_data.filter(col("STDR_QU_CD") == quarter)
+        if df_data.rdd.isEmpty():
+            return None
         """
         방법 1
         아파트_단지_수, 아파트_평균_시가
         """
         df_data_one = df_data.select(
-            col("STDR_YY_CD"),  # 기준 년 코드
-            col("STDR_QU_CD"),  # 기준 분기 코드
-            col("TRDAR_CD"),  # 상권_코드
-            col("AVRG_AE"),
-            col("AVRG_MKTC"),
-        )
+            col("STDR_YY_CD"), col("STDR_QU_CD"), col("TRDAR_CD"), col("AVRG_AE"), col("AVRG_MKTC"),
+        )  # 기준 년 코드  # 기준 분기 코드  # 상권_코드
         df_one = df_data_one.orderBy(col("AVRG_MKTC").asc(), col("AVRG_AE").asc())
 
         result = df_one.rdd.zipWithIndex().toDF()
         df_one.drop()
         result = result.select(col("_1.*"), col("_2").alias("RANK10"))
-        result = result.select(col("STDR_YY_CD"), col("STDR_QU_CD"), col("TRDAR_CD"), col("RANK10"),)
+        result = result.select(col("STDR_YY_CD"), col("STDR_QU_CD"), col("TRDAR_CD"), col("RANK10"))
 
         result.show(10)
 
@@ -993,22 +1018,21 @@ class DF(object):
 
         return df_spark
 
-    def calculate_eleven(self, df_data: DataFrame):
+    def calculate_eleven(self, df_data: DataFrame, quarter: int = 1):
         logging.error("calculate_eleven start")
-
         df_data.createOrReplaceTempView("df")
+
+        df_data = df_data.filter(col("STDR_QU_CD") == quarter)
+        if df_data.rdd.isEmpty():
+            return None
 
         """
         방법 1
         아파트_단지_수, 아파트_평균_시가
         """
         df_data_one = df_data.select(
-            col("STDR_YY_CD"),  # 기준 년 코드
-            col("STDR_QU_CD"),  # 기준 분기 코드
-            col("TRDAR_CD"),  # 상권_코드
-            col("AVRG_AE"),
-            col("AVRG_MKTC"),
-        )
+            col("STDR_YY_CD"), col("STDR_QU_CD"), col("TRDAR_CD"), col("AVRG_AE"), col("AVRG_MKTC"),
+        )  # 기준 년 코드  # 기준 분기 코드  # 상권_코드
         df_one = df_data_one.orderBy(col("AVRG_MKTC").asc(), col("AVRG_AE").asc())
 
         result = df_one.rdd.zipWithIndex().toDF()
@@ -1046,22 +1070,26 @@ class DF(object):
 
         return df_spark
 
-    def calculate_fourteen(self, df_data: DataFrame):
+    def calculate_fourteen(self, df_data: DataFrame, quarter: int = 1):
         logging.error("calculate_fourteen start")
         df_data.createOrReplaceTempView("df")
+
+        df_data = df_data.filter(col("STDR_QU_CD") == quarter)
+        if df_data.rdd.isEmpty():
+            return None
 
         """
         방법 1
         상권_변화_지표, 서울_운영_영업_개월_평균, 서울_폐업_영업_개월_평균_-1
         """
         df_data_one = df_data.select(
-            col("STDR_YY_CD"),  # 기준 년 코드
-            col("STDR_QU_CD"),  # 기준 분기 코드
+            col("STDR_YY_CD"),
+            col("STDR_QU_CD"),
             col("TRDAR_CD"),
             col("TRDAR_CHNGE_IX"),
             col("SU_OPR_SALE_MT_AVRG"),
             col("SU_CLS_SALE_MT_AVRG"),
-        )
+        )  # 기준 년 코드  # 기준 분기 코드
 
         df_data_one = df_data_one.withColumn(
             "TRDAR_CHNGE_IX",
@@ -1094,7 +1122,7 @@ class DF(object):
             col("STDR_YY_CD"),  # col("기준_년_코드").alias("STDR_YY_CD"),
             col("STDR_QU_CD"),  # col("기준_분기_코드").alias("STDR_QU_CD"),
             col("TRDAR_CD"),  # col("상권_코드").alias("TRDAR_CD"),
-            col("TRDAR_CD"),  # col("서비스_업종_코드").alias("SVC_INDUTY_CD"),
+            col("SVC_INDUTY_CD"),  # col("서비스_업종_코드").alias("SVC_INDUTY_CD"),
             # 점표 지표
             col("STOR_CO"),  # col("점포_수").alias("STOR_CO"),
             # col("SIMILR_INDUTY_STOR_CO"),  # col("유사_업종_점포_수").alias("SIMILR_INDUTY_STOR_CO"),
@@ -1107,21 +1135,22 @@ class DF(object):
 
         return df_spark
 
-    def calculate_fifteen(self, df_data: DataFrame):
+    def calculate_fifteen(self, df_data: DataFrame, quarter: int = 1, service: str = "CS100001"):
         logging.error("calculate_fifteen start")
         df_data.createOrReplaceTempView("df")
+
+        df_data = df_data.where((col("STDR_QU_CD") == quarter) & (col("SVC_INDUTY_CD") == service))
+        if df_data.rdd.isEmpty():
+            print("this is empty")
+            return None
 
         """
         방법 1
         개업_율, 폐업_률
         """
         df_data_one = df_data.select(
-            col("STDR_YY_CD"),  # 기준 년 코드
-            col("STDR_QU_CD"),  # 기준 분기 코드
-            col("TRDAR_CD"),  # 상권_코드
-            col("OPBIZ_RT"),
-            col("CLSBIZ_RT"),
-        )
+            col("STDR_YY_CD"), col("STDR_QU_CD"), col("TRDAR_CD"), col("OPBIZ_RT"), col("CLSBIZ_RT"),
+        )  # 기준 년 코드  # 기준 분기 코드  # 상권_코드
         df_one = df_data_one.orderBy(col("CLSBIZ_RT").desc(), col("OPBIZ_RT").asc())
 
         df_one = df_one.rdd.zipWithIndex().toDF()
@@ -1133,12 +1162,8 @@ class DF(object):
         점포_수, 프랜차이즈_점포_수_1
         """
         df_data_two = df_data.select(
-            col("STDR_YY_CD"),  # 기준 년 코드
-            col("STDR_QU_CD"),  # 기준 분기 코드
-            col("TRDAR_CD"),
-            col("STOR_CO"),
-            col("FRC_STOR_CO"),
-        )
+            col("STDR_YY_CD"), col("STDR_QU_CD"), col("TRDAR_CD"), col("STOR_CO"), col("FRC_STOR_CO"),
+        )  # 기준 년 코드  # 기준 분기 코드
         df_two = df_data_two.orderBy(col("STOR_CO").desc(), col("FRC_STOR_CO").desc())
 
         df_two = df_two.rdd.zipWithIndex().toDF()
@@ -1189,7 +1214,7 @@ class DF(object):
         df_spark.show(2)
         #     return df_spark
 
-        # def calculate_twelve(self, df_data: DataFrame):
+        # def calculate_twelve(self, df_data: DataFrame, quarter : int = 1):
         #     logging.error("calculate_twelve start")
         #     df_data.createOrReplaceTempView("df")
 
@@ -1258,7 +1283,7 @@ class DF(object):
         df_spark.show(2)
         #     return df_spark
 
-        # def calculate_thirteen(self, df_data: DataFrame):
+        # def calculate_thirteen(self, df_data: DataFrame, quarter : int = 1):
         #     logging.error("calculate_thirteen start")
         #     df_data.createOrReplaceTempView("df")
 

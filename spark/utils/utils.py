@@ -1,4 +1,6 @@
 # 서울특별시
+BUCKET_NAME = "rtc-raw-data"
+REGION = "us-east-1"
 
 
 def get_sys_args(ls: list):

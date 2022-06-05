@@ -1,13 +1,10 @@
 import json
 import logging
-from functools import reduce
 
-from pyspark import SparkContext
 from pyspark.sql import DataFrame
-from pyspark.sql.functions import col, lit, when
+from pyspark.sql.functions import col, lit
 from spark.spark_configure import SparkS3
-from utils.my_secret import profile_info
-from utils.utils import SEOUL_MUNICIPALITY_CODE, get_sys_args
+from utils.utils import BUCKET_NAME, get_sys_args
 
 from modules.dataframe import DF
 
@@ -86,9 +83,7 @@ class Calculate(object):
         save_df_result = final_report_df.toJSON().map(lambda x: json.loads(x)).collect()
 
         self.spark.s3_client.put_object(
-            Body=json.dumps(save_df_result),
-            Bucket=profile_info["aws_bucket_name"],
-            Key=f"result/{year}_{quarter}_report.json",
+            Body=json.dumps(save_df_result), Bucket=BUCKET_NAME, Key=f"result/{year}_{quarter}_report.json",
         )
 
     def find_city_code(self, code, is_middle=True):
@@ -171,7 +166,7 @@ class Calculate(object):
                         save_df_result = result_df.toJSON().map(lambda x: json.loads(x)).collect()
                         self.spark.s3_client.put_object(
                             Body=json.dumps(save_df_result),
-                            Bucket=profile_info["aws_bucket_name"],
+                            Bucket=BUCKET_NAME,
                             Key=f"logs/{num}_{year}_{quarter}_report.json",
                         )
                         # result_df.rdd.coalesce(1).saveAsTextFile(f"s3://rtc-spark/result/{file_name}.csv")

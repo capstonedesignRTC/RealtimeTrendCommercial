@@ -132,10 +132,9 @@ class Calculate(object):
                             continue
 
                         print("data send start")
-                        # self.spark.send_file(result_df, f"logs/{num}_{year}_{quarter}_report.json")
 
                         result_df.coalesce(1).write.option("header", "true").csv(
-                            f"Results/{num}_{year}_{quarter}_report.csv"
+                            f"s3a://rtc-result/{num}_{year}_{quarter}_report.csv"
                         )
 
                         print("data send end")

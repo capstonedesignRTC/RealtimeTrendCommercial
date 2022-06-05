@@ -24,13 +24,13 @@ if __name__ == "__main__":
 
     city_input, specific_args = None, []
 
-    for idx, arg in enumerate(sys.argv[1:]):
-        if idx == 0:
-            city_input = int(arg)
-        else:
-            specific_args.append(str(arg))
+    # for idx, arg in enumerate(sys.argv[1:]):
+    #     if idx == 0:
+    #         city_input = int(arg)
+    #     else:
+    #         specific_args.append(str(arg))
 
-    calculate.insert_specific_args(specific_args)
+    # calculate.insert_specific_args(specific_args)
 
     logging.error(f"GOT city_input : {city_input} specific_args : {specific_args}")
     result = calculate.calculation_all_founds()

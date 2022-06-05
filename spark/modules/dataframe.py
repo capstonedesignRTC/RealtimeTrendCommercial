@@ -1234,8 +1234,8 @@ class DF(object):
         final_report_df = final_report_df.rdd.zipWithIndex().toDF()
         final_report_df = final_report_df.select(col("_1.*"), col("_2").alias("RANK"))
 
-        final_report_df.coalesce(1).write.option("header", "true").csv(
-            f"s3a://rtc-result/spark/{year}_{quarter}_report.csv"
+        final_report_df.coalesce(1).write.option("header", "true").mode("append").csv(
+            f"s3a://rtc-result/spark/{year}_{quarter}_report"
         )
 
         save_df_result = final_report_df.toJSON().map(lambda x: json.loads(x)).collect()

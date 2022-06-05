@@ -43,6 +43,24 @@ class Calculate(object):
         self.result = self.result.withColumn(f"RANK{num}", lit(0))
 
     def update_final_result_df(self, year: int = 2018, quarter: int = 1):
+
+        for col in [
+            "RANK1",
+            "RANK2",
+            "RANK3",
+            "RANK4",
+            "RANK5",
+            "RANK6",
+            "RANK7",
+            "RANK8",
+            "RANK10",
+            "RANK11",
+            "RANK14",
+            "RANK15",
+        ]:
+            if col not in self.result.columns:
+                self.result.withColumn(col, lit(0))
+
         final_report_df = self.result.select(
             col("STDR_YY_CD"),
             col("STDR_QU_CD"),

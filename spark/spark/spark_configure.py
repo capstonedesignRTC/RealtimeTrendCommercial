@@ -118,7 +118,8 @@ class SparkS3(object):
 
     def get_file(self, file_name="convert_code.csv") -> DataFrame:
         try:
-            file_name = f"s3a://{self.bucket_name}/{file_name}"
+
+            file_name = f"s3a://rtc-raw-data/{file_name}"
             print(f"trying {file_name}")
             df_spark = (
                 self.spark.read.format("csv")

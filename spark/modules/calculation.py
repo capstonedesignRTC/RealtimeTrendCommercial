@@ -1,5 +1,6 @@
 import json
 import logging
+import time
 
 import pyspark.sql.functions as F
 from pyspark.sql import DataFrame
@@ -133,8 +134,8 @@ class Calculate(object):
 
                         print("data send start")
 
-                        result_df.coalesce(1).write.option("header", "true").mode("append").csv(
-                            f"s3a://rtc-result/spark/{num}_{year}_{quarter}_report"
+                        result_df.coalesce(1).write.option("header", "true").csv(
+                            f"s3a://rtc-result/spark/{num}_{year}_{quarter}_report_{int(time.time())}"
                         )
 
                         print("data send end")

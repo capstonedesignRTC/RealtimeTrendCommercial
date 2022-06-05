@@ -2,9 +2,7 @@ import logging
 import os
 
 import boto3
-import pandas as pd
-from botocore.exceptions import ClientError
-from pyspark import SparkConf, SQLContext
+from pyspark import SparkConf
 from pyspark.conf import SparkConf
 from pyspark.sql import DataFrame, SparkSession
 from utils.my_secret import profile_info
@@ -82,13 +80,15 @@ class SparkS3(object):
                 .csv(file_path)
                 .coalesce(1)
             )
+
+            # df_spark = df_spark.limit(10)
             # os.remove(file_path)
             return df_spark
         except:
             logging.error("no file exists")
             return None
 
-    def get_file_test(self, file_name="convert_code.csv") -> DataFrame:
+    def get_file_s3a(self, file_name="convert_code.csv") -> DataFrame:
         try:
             file_name = f"s3a://{self.bucket_name}/{file_name}"
 

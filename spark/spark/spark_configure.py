@@ -70,6 +70,11 @@ class SparkS3(object):
         self.spark.stop()
 
     def send_file(self, save_df_result: DataFrame, key: str):
+        r = [i for i in save_df_result.columns if i == "TRDAR_CD"]
+        len_r = len(r)
+        if len_r > 1:
+            for _ in range(len_r - 1):
+                save_df_result = save_df_result.drop(save_df_result["TRDAR_CD"])
         try:
             df = save_df_result.repartition(1).toJSON().map(lambda x: json.loads(x)).collect()
             self.s3_client.put_object(
@@ -79,9 +84,6 @@ class SparkS3(object):
             print(e.__str__())
 
         try:
-
-            while "trdar_cd" in save_df_result.columns:
-                save_df_result = save_df_result.drop(save_df_result["trdar_cd"])
 
             save_df_result.write.format("org.apache.spark.sql.json").mode("append").save(
                 f"s3://{self.send_bucket}/{key}"

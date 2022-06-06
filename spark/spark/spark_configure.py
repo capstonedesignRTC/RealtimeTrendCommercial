@@ -70,16 +70,23 @@ class SparkS3(object):
         self.spark.stop()
 
     def send_file(self, save_df_result: DataFrame, key: str):
-        save_df_result.write.format("org.apache.spark.sql.json").mode("append").save(f"s3://{self.send_bucket}/{key}")
-        save_df_result.write.format("json").save(f"s3://{self.send_bucket}/test_{key}")
         try:
-            while "trdar_cd" in save_df_result.columns:
-                save_df_result = save_df_result.drop(save_df_result["trdar_cd"])
-
             df = save_df_result.repartition(1).toJSON().map(lambda x: json.loads(x)).collect()
             self.s3_client.put_object(
                 Body=json.dumps(df), Bucket=self.send_bucket, Key=key,
             )
+        except Exception as e:
+            print(e.__str__())
+
+        try:
+
+            while "trdar_cd" in save_df_result.columns:
+                save_df_result = save_df_result.drop(save_df_result["trdar_cd"])
+
+            save_df_result.write.format("org.apache.spark.sql.json").mode("append").save(
+                f"s3://{self.send_bucket}/{key}"
+            )
+            save_df_result.write.format("json").save(f"s3://{self.send_bucket}/test_{key}")
         except Exception as e:
             print(e.__str__())
 

@@ -55,7 +55,7 @@ class Calculate(object):
         years, quarters, funcs = get_sys_args(self.specific_args)
 
         full_dict = {}
-        for year in [2018, 2019, 2020, 2021, 2022]:  # 해당 년도 가져오기
+        for year in [2019, 2020, 2021, 2022, 2018]:  # 해당 년도 가져오기
             if year not in full_dict:
                 full_dict[year] = {}
             for quarter in quarters:
@@ -63,9 +63,13 @@ class Calculate(object):
                 if quarter not in full_dict[year]:
                     full_dict[year][quarter] = {}
 
-                for num in [6]:  # 해당 함수들을 가져오기
+                for num in funcs:  # 해당 함수들을 가져오기
                     if num not in full_dict[year][quarter]:
                         full_dict[year][quarter][num] = None
+
+                        if num in [3, 7, 8, 15]:
+                            self.update_result_df_with_zero(num)
+                            continue
                         try:
                             part_df_list = []
                             page = 1

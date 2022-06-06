@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+from time import sleep
 
 import boto3
 from pyspark import SparkConf
@@ -63,6 +64,7 @@ class SparkS3(object):
     def __init__(self):
         logging.error("spark start")
         self.spark = SparkSession.builder.config(conf=self.conf).appName("RTC_SPARK").master("local[*]").getOrCreate()
+        sleep(1)
 
     def stop_spark(self):
         self.spark.stop()
@@ -73,45 +75,44 @@ class SparkS3(object):
             Body=json.dumps(df), Bucket=self.send_bucket, Key=key,
         )
 
-    def get_file(self, file_name="test_three.csv") -> DataFrame:
-        try:
-            file_path = f"Downloads/{file_name}"
-
-            if not os.path.exists("Downloads"):
-                os.mkdir("Downloads")
-
-            if not os.path.exists(file_path):
-                self.s3_client.download_file(Bucket=self.get_bucket, Key=file_name, Filename=file_path)
-
-            df_spark = (
-                self.spark.read.format("csv")
-                .option("encoding", "euc-kr")
-                .option("header", True)
-                .option("inferSchema", True)
-                .csv(file_path)
-                .coalesce(1)
-            )
-
-            return df_spark
-        except:
-            logging.error("no file exists")
-            return None
-
-    # def get_file(self, file_name="convert_code.csv") -> DataFrame:
+    # def get_file(self, file_name="test_three.csv") -> DataFrame:
     #     try:
-    #         file_name = f"s3://{self.send_bucket}/{file_name}"
-    #         file_name = "Downloads/convert_code.csv"
+    #         file_path = f"Downloads/{file_name}"
 
-    #         print(f"trying {file_name}")
+    #         if not os.path.exists("Downloads"):
+    #             os.mkdir("Downloads")
+
+    #         if not os.path.exists(file_path):
+    #             self.s3_client.download_file(Bucket=self.get_bucket, Key=file_name, Filename=file_path)
+
     #         df_spark = (
     #             self.spark.read.format("csv")
     #             .option("encoding", "euc-kr")
     #             .option("header", True)
-    #             .option("inferSchema", False)
-    #             .load(file_name)
+    #             .option("inferSchema", True)
+    #             .csv(file_path)
     #             .coalesce(1)
     #         )
+
     #         return df_spark
-    #     except Exception as e:
-    #         logging.error(e.__str__())
+    #     except:
+    #         logging.error("no file exists")
     #         return None
+
+    def get_file(self, file_name="convert_code.csv") -> DataFrame:
+        try:
+            file_name = f"s3://{self.get_bucket}/{file_name}"
+
+            print(f"trying {file_name}")
+            df_spark = (
+                self.spark.read.format("csv")
+                .option("encoding", "euc-kr")
+                .option("header", True)
+                .option("inferSchema", False)
+                .load(file_name)
+                .coalesce(1)
+            )
+            return df_spark
+        except Exception as e:
+            logging.error(e.__str__())
+            return None

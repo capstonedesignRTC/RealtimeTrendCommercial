@@ -6,8 +6,7 @@ import pyspark.sql.functions as F
 from pyspark import SQLContext
 from pyspark.sql import DataFrame
 from pyspark.sql import functions as F
-from pyspark.sql.functions import (col, lit, monotonically_increasing_id, udf,
-                                   when)
+from pyspark.sql.functions import col, lit, monotonically_increasing_id, udf, when
 from pyspark.sql.types import IntegerType, StringType, StructField, StructType
 from spark.spark_configure import SparkResult
 
@@ -1227,7 +1226,7 @@ class DF(object):
 
     def calc_final_result(self, df: DataFrame, year, quarter):
 
-        df = df.join(df, ["TRDAR_CD"])
+        df = df.join(df, ["STDR_YY_CD", "STDR_QU_CD", "TRDAR_CD"])
 
         final_report_df = df.withColumn(
             "TOTAL_SCORE",

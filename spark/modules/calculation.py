@@ -39,6 +39,7 @@ class Calculate(object):
         print("new self.result")
 
     def update_result_df(self, df: DataFrame):
+
         self.result = self.result.join(other=df, on=["STDR_YY_CD", "STDR_QU_CD", "ADSTRD_CD"], how="fullouter").fillna(
             0
         )

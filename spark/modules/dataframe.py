@@ -1199,6 +1199,7 @@ class DF(object):
         result = result.repartition(1).withColumn(
             "ADSTRD_CD", udf(lambda id: new_col_val[id])(monotonically_increasing_id())
         )
+
         # 설정 이후 drop
         self.spark.spark.catalog.dropTempView("df")
         return result
@@ -1225,6 +1226,9 @@ class DF(object):
         return df
 
     def calc_final_result(self, df: DataFrame, year, quarter):
+
+        df = df.join(df, ["TRDAR_CD"])
+
         final_report_df = df.withColumn(
             "TOTAL_SCORE",
             (

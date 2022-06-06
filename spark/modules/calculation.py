@@ -6,14 +6,14 @@ import pyspark.sql.functions as F
 from pyspark.sql import DataFrame
 from pyspark.sql.functions import col, lit
 from spark.spark_configure import SparkS3
-from utils.utils import get_sys_args
 
 from modules.dataframe import DF
+from modules.utils import CODE
+from utils.utils import get_sys_args
 
 
 class Calculate(object):
-    def __init__(self, spark: SparkS3 = None, code_dict: dict = {}):
-        self.code_dict = code_dict
+    def __init__(self, spark: SparkS3 = None):
         self.spark = spark
         self.df_func = DF()
 
@@ -27,11 +27,11 @@ class Calculate(object):
     def make_pre_df(self, year, quarter) -> DataFrame:
         self.result = self.df_func.get_empty_dataframe()
         pre_data = []
-        for val_1 in self.code_dict.values():
-            for val_2 in val_1.values():
-                for small in val_2.keys():
-                    unknown_df = [int(year), int(quarter), int(small)]  # int(big), int(middle),
-                    pre_data.append(unknown_df)
+
+        for val_1 in CODE.values():
+            for middle in val_1.keys():
+                unknown_df = [int(year), int(quarter), str(middle)]
+                pre_data.append(unknown_df)
 
         rdd = self.df_func.spark.spark.sparkContext.parallelize(pre_data)
         unknown_df = self.df_func.spark.spark.createDataFrame(rdd, self.df_func.schema)
@@ -39,7 +39,9 @@ class Calculate(object):
         print("new self.result")
 
     def update_result_df(self, df: DataFrame):
-        self.result = self.result.join(other=df, on=["STDR_YY_CD", "STDR_QU_CD", "TRDAR_CD"], how="fullouter").fillna(0)
+        self.result = self.result.join(other=df, on=["STDR_YY_CD", "STDR_QU_CD", "ADSTRD_CD"], how="fullouter").fillna(
+            0
+        )
 
     def update_result_df_with_zero(self, num: int):
         self.result = self.result.withColumn(f"RANK{num}", lit(0))
@@ -47,24 +49,13 @@ class Calculate(object):
     def update_final_result_df(self, year: int = 2018, quarter: int = 1):
         result = self.df_func.update_result_empty_col(self.result)
         result = self.df_func.calc_final_result(result, year, quarter)
-        # self.spark.send_file(result, f"result/{year}_{quarter}_report.json")
-
-    def find_city_code(self, code, is_middle=True):
-        for big, val1 in self.code_dict.items():
-            for middle, val2 in val1.items():
-                if middle == code:
-                    return big
-                if is_middle:
-                    continue
-                for small in val2.keys():
-                    if small == code:
-                        return big, middle
+        self.spark.send_file(result, f"result/new/{year}_{quarter}_report.json")
 
     def calculation_all_founds(self):
         years, quarters, funcs = get_sys_args(self.specific_args)
 
         full_dict = {}
-        for year in [2022, 2021, 2020, 2019, 2018]:  # 해당 년도 가져오기
+        for year in [2018, 2019, 2020, 2021, 2022]:  # 해당 년도 가져오기
             if year not in full_dict:
                 full_dict[year] = {}
             for quarter in quarters:
@@ -72,7 +63,7 @@ class Calculate(object):
                 if quarter not in full_dict[year]:
                     full_dict[year][quarter] = {}
 
-                for num in funcs:  # 해당 함수들을 가져오기
+                for num in [6]:  # 해당 함수들을 가져오기
                     if num not in full_dict[year][quarter]:
                         full_dict[year][quarter][num] = None
                         try:
@@ -85,9 +76,9 @@ class Calculate(object):
                                     break
                                 page += 1
                                 part_df_list.append(df_spark)
-
                                 if page == 100:
                                     break
+                                break
 
                             full_df = part_df_list.pop()
                             while part_df_list:
@@ -97,7 +88,6 @@ class Calculate(object):
                                     print("union success")
                                 except:
                                     pass
-
                             full_dict[year][quarter][num] = full_df
 
                             print("add dictionary")
@@ -106,113 +96,32 @@ class Calculate(object):
                     try:
                         print("get from dictionary")
                         full_df = full_dict[year][quarter][num]
-                        ###################
-
-                        # # in local test
-                        # page = 1
-                        # file_name = f"{num}_{year}_{page}.csv"
-                        # logging.error(f"try file name : {file_name}")
-                        # full_df = self.spark.get_file(file_name)
 
                         if full_df is None:
-                            self.update_result_df_with_zero(num)
                             logging.error(f"fail file name : {file_name}")
+                            self.update_result_df_with_zero(num)
                             continue
-
-                        logging.error(f"got file name : {file_name}")
-                        try:
+                        else:
+                            logging.error(f"got file name : {file_name}")
                             df_func, df_calc_func = self.df_func.get_function(num)
                             df_data = df_func(full_df)  # 우선은 분리시켜놓고 나중에 합치던가 하자
                             result_df = df_calc_func(df_data, quarter)
+
+                            result_df.show(10)
                             self.update_result_df(df=result_df)
                             logging.error(f"process success")
 
-                        except Exception as e:
-                            print(e.__str__())
-                            self.update_result_df_with_zero(num)
-                            continue
-
-                        print("data send start")
-
-                        result_df.coalesce(1).write.option("header", "true").csv(
-                            f"s3a://rtc-result/spark/{num}_{year}_{quarter}_report_{int(time.time())}"
-                        )
-
-                        print("data send end")
+                            print("data send start")
+                            self.spark.send_file(result_df, f"logs/new/{num}_{year}_{quarter}_report.json")
+                            print("data send end")
 
                     except Exception as e:
                         print(e.__str__())
+
+                    if f"RANK{num}" not in self.result.columns:
                         self.update_result_df_with_zero(num)
 
                     print("===================================")
 
                 self.update_final_result_df(year, quarter)
                 self.reset_result_df()
-
-    # def calculation_all_cities(self):
-    #     for big_code in self.code_dict.keys():  # 11545
-    #         logging.error(f"this stage is {SEOUL_MUNICIPALITY_CODE[big_code]}")
-    #         self.calculation_big_cities(big_code)
-
-    # def calculation_big_cities(self, big_code: int):
-    #     """
-    #     시군구 코드(법정동 코드)로만 검색
-    #     """
-    #     for middle_code in self.code_dict[big_code].keys():
-    #         logging.error(f"this stage is {middle_code}")
-    #         self.calculation_middle_cities(big_code, middle_code)
-
-    # def calculation_middle_cities(self, big_code: int, middle_code: int):
-    #     """
-    #     행정동 코드로만 검색
-    #     """
-    #     for small_code in self.code_dict[big_code][middle_code].keys():
-    #         logging.error(f"this stage is {small_code}")
-    #         self.calculation_small_cities(big_code, middle_code, small_code)
-
-    # def calculation_small_cities(self, big: int, middle: int, small: int):
-    #     """
-    #     상권 코드로만 검색
-    #     """
-    #     years, quarters, funcs = get_sys_args(self.specific_args)
-
-    #     year_df_list = []
-    #     for year in years:  # 해당 년도 가져오기
-    #         for num in funcs:  # 해당 함수들을 가져오기
-    #             # part_df_list = []
-    #             # page = 1
-    #             # while True:
-    #             #     file_name = f"{num}_{year}_{page}.csv"
-    #             #     df_spark = self.spark.get_file(file_name)
-    #             #     if df_spark is None:
-    #             #         break
-    #             #     page += 1
-    #             #     part_df_list.append(df_spark)
-
-    #             # full_df = part_df_list.pop()
-    #             # while part_df_list:
-    #             #     part_df = part_df_list.pop()
-    #             #     full_df = full_df.union(part_df)
-
-    #             # print(full_df.count())
-
-    #             # full_df.show(1)
-
-    #             ###################
-    #             page = 1
-    #             file_name = f"{num}_{year}_{page}.csv"
-    #             logging.error(f"try file name : {file_name}")
-    #             full_df = self.spark.get_file(file_name)
-
-    #             if full_df is None:
-    #                 logging.error(f"fail file name : {file_name}")
-    #                 continue
-
-    #             logging.error(f"got file name : {file_name}")
-    #             df_func, df_calc_func = self.df_func.get_function(num)
-    #             df_data = df_func(full_df)  # 우선은 분리시켜놓고 나중에 합치던가 하자
-    #             result_df = df_calc_func(df_data)
-    #             self.update_result_df(df=result_df)
-
-    #         year_df_list.append(self.result)
-    #         self.reset_result_df()

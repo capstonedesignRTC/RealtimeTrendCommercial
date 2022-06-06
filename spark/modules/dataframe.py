@@ -3,41 +3,30 @@ import logging
 import time
 
 import pyspark.sql.functions as F
+from pyspark import SQLContext
 from pyspark.sql import DataFrame
-from pyspark.sql.functions import col, lit, when
-from pyspark.sql.types import IntegerType, StructField, StructType
+from pyspark.sql import functions as F
+from pyspark.sql.functions import (col, lit, monotonically_increasing_id, udf,
+                                   when)
+from pyspark.sql.types import IntegerType, StringType, StructField, StructType
 from spark.spark_configure import SparkResult
 
+from modules.utils import CONVERT_CODE
 
-def get_sk_code_to_hjd_code(df: DataFrame) -> dict():
-    """
-    상권 코드를 행정동 코드로 변환하는 data
-    """
-    df_spark = df.select(
-        col("상권_코드").alias("SIGNGU_CD"),
-        col("시군구_코드").alias("ADSTRD_CD"),
-        col("행정동_코드").alias("TRDAR_CD"),
-        col("상권_구분_코드").alias("sk_classification_code"),
-    )
-    df.drop()
 
-    convert_dict = dict()
-    for row in df_spark.rdd.collect():
-        signgu_code = row["SIGNGU_CD"]
-        adstrd_code = row["ADSTRD_CD"]
-        trdar_code = row["TRDAR_CD"]
-        sk_classification_code = row["sk_classification_code"]
+def get_big_code(code):
+    code = str(code)
+    for big, val1 in CONVERT_CODE.items():
+        for middle, val2 in val1.items():
+            for small in val2.keys():
+                if small == code:
+                    return int(middle)
 
-        if adstrd_code not in convert_dict:
-            convert_dict[adstrd_code] = dict()
+    return None
 
-        if trdar_code not in convert_dict[adstrd_code]:  # 상권_구분_코드_명 저장
-            convert_dict[adstrd_code][trdar_code] = dict()
 
-        if signgu_code not in convert_dict[adstrd_code][trdar_code]:
-            convert_dict[adstrd_code][trdar_code][signgu_code] = sk_classification_code
-
-    return convert_dict
+def get_new_columns(list_vals):
+    return [get_big_code(k) for k in list_vals]
 
 
 class DF(object):
@@ -45,23 +34,9 @@ class DF(object):
         [
             StructField("STDR_YY_CD", IntegerType(), nullable=False),
             StructField("STDR_QU_CD", IntegerType(), nullable=False),
-            # StructField("SIGNGU_CD", IntegerType(), nullable=False),
-            # StructField("ADSTRD_CD", IntegerType(), nullable=False),
-            StructField("TRDAR_CD", IntegerType(), nullable=False),
-            # StructField("RANK1", IntegerType(), nullable=True),
-            # StructField("RANK2", IntegerType(), nullable=True),
-            # StructField("RANK3", IntegerType(), nullable=True),
-            # StructField("RANK4", IntegerType(), nullable=True),
-            # StructField("RANK5", IntegerType(), nullable=True),
-            # StructField("RANK6", IntegerType(), nullable=True),
-            # StructField("RANK7", IntegerType(), nullable=True),
-            # StructField("RANK8", IntegerType(), nullable=True),
-            # StructField("RANK10", IntegerType(), nullable=True),
-            # StructField("RANK11", IntegerType(), nullable=True),
-            # StructField("RANK14", IntegerType(), nullable=True),
-            # StructField("RANK15", IntegerType(), nullable=True),
-            # StructField("TOTAL_SCORE", IntegerType(), nullable=True),
-            # StructField("RANK", IntegerType(), nullable=True),
+            # StructField("SIGNGU_CD", IntegerType(), nullable=True),
+            StructField("ADSTRD_CD", StringType(), nullable=True),
+            # StructField("TRDAR_CD", IntegerType(), nullable=True),
         ]
     )
 
@@ -198,7 +173,11 @@ class DF(object):
         )
         result = result.rdd.zipWithIndex().toDF()
         result = result.select(col("_1.*"), col("_2").alias("RANK1"))
-        result.show(10)
+
+        new_col_val = get_new_columns(result.rdd.map(lambda x: x.TRDAR_CD).collect())
+        result = result.repartition(1).withColumn(
+            "ADSTRD_CD", udf(lambda id: new_col_val[id])(monotonically_increasing_id())
+        )
 
         # 설정 이후 drop
         self.spark.spark.catalog.dropTempView("df")
@@ -288,7 +267,10 @@ class DF(object):
         result = result.rdd.zipWithIndex().toDF()
         result = result.select(col("_1.*"), col("_2").alias("RANK2"))
 
-        result.show(10)
+        new_col_val = get_new_columns(result.rdd.map(lambda x: x.TRDAR_CD).collect())
+        result = result.repartition(1).withColumn(
+            "ADSTRD_CD", udf(lambda id: new_col_val[id])(monotonically_increasing_id())
+        )
 
         # 설정 이후 drop
         self.spark.spark.catalog.dropTempView("df")
@@ -393,7 +375,10 @@ class DF(object):
         result = result.rdd.zipWithIndex().toDF()
         result = result.select(col("_1.*"), col("_2").alias("RANK3"))
 
-        result.show(10)
+        new_col_val = get_new_columns(result.rdd.map(lambda x: x.TRDAR_CD).collect())
+        result = result.repartition(1).withColumn(
+            "ADSTRD_CD", udf(lambda id: new_col_val[id])(monotonically_increasing_id())
+        )
 
         # 설정 이후 drop
         self.spark.spark.catalog.dropTempView("df")
@@ -483,7 +468,10 @@ class DF(object):
         result = result.rdd.zipWithIndex().toDF()
         result = result.select(col("_1.*"), col("_2").alias("RANK4"))
 
-        result.show(10)
+        new_col_val = get_new_columns(result.rdd.map(lambda x: x.TRDAR_CD).collect())
+        result = result.repartition(1).withColumn(
+            "ADSTRD_CD", udf(lambda id: new_col_val[id])(monotonically_increasing_id())
+        )
 
         # 설정 이후 drop
         self.spark.spark.catalog.dropTempView("df")
@@ -577,8 +565,10 @@ class DF(object):
         result = result.rdd.zipWithIndex().toDF()
         result = result.select(col("_1.*"), col("_2").alias("RANK5"))
 
-        result.show(10)
-
+        new_col_val = get_new_columns(result.rdd.map(lambda x: x.TRDAR_CD).collect())
+        result = result.repartition(1).withColumn(
+            "ADSTRD_CD", udf(lambda id: new_col_val[id])(monotonically_increasing_id())
+        )
         # 설정 이후 drop
         self.spark.spark.catalog.dropTempView("df")
         return result
@@ -612,7 +602,7 @@ class DF(object):
         logging.error("calculate_six start")
         df_data.createOrReplaceTempView("df")
 
-        df_data = df_data.filter(col("STDR_QU_CD") == quarter)
+        df_data = df_data.filter(col("STDR_QU_CD") == 4)
         if df_data.rdd.isEmpty():
             return None
 
@@ -640,7 +630,10 @@ class DF(object):
         result = result.select(col("_1.*"), col("_2").alias("RANK6"))
         result = result.select(col("STDR_YY_CD"), col("STDR_QU_CD"), col("TRDAR_CD"), col("RANK6"))
 
-        result.show(10)
+        new_col_val = get_new_columns(result.rdd.map(lambda x: x.TRDAR_CD).collect())
+        result = result.repartition(1).withColumn(
+            "ADSTRD_CD", udf(lambda id: new_col_val[id])(monotonically_increasing_id())
+        )
 
         # 설정 이후 drop
         self.spark.spark.catalog.dropTempView("df")
@@ -789,7 +782,11 @@ class DF(object):
 
         result = result.rdd.zipWithIndex().toDF()
         result = result.select(col("_1.*"), col("_2").alias("RANK7"))
-        result.show(10)
+
+        new_col_val = get_new_columns(result.rdd.map(lambda x: x.TRDAR_CD).collect())
+        result = result.repartition(1).withColumn(
+            "ADSTRD_CD", udf(lambda id: new_col_val[id])(monotonically_increasing_id())
+        )
 
         # 설정 이후 drop
         self.spark.spark.catalog.dropTempView("df")
@@ -936,7 +933,11 @@ class DF(object):
 
         result = result.rdd.zipWithIndex().toDF()
         result = result.select(col("_1.*"), col("_2").alias("RANK8"))
-        result.show(10)
+
+        new_col_val = get_new_columns(result.rdd.map(lambda x: x.TRDAR_CD).collect())
+        result = result.repartition(1).withColumn(
+            "ADSTRD_CD", udf(lambda id: new_col_val[id])(monotonically_increasing_id())
+        )
 
         # 설정 이후 drop
         self.spark.spark.catalog.dropTempView("df")
@@ -997,7 +998,10 @@ class DF(object):
         result = result.select(col("_1.*"), col("_2").alias("RANK10"))
         result = result.select(col("STDR_YY_CD"), col("STDR_QU_CD"), col("TRDAR_CD"), col("RANK10"))
 
-        result.show(10)
+        new_col_val = get_new_columns(result.rdd.map(lambda x: x.TRDAR_CD).collect())
+        result = result.repartition(1).withColumn(
+            "ADSTRD_CD", udf(lambda id: new_col_val[id])(monotonically_increasing_id())
+        )
 
         # 설정 이후 drop
         self.spark.spark.catalog.dropTempView("df")
@@ -1042,7 +1046,10 @@ class DF(object):
         result = result.select(col("_1.*"), col("_2").alias("RANK11"))
         result = result.select(col("STDR_YY_CD"), col("STDR_QU_CD"), col("TRDAR_CD"), col("RANK11"),)
 
-        result.show(10)
+        new_col_val = get_new_columns(result.rdd.map(lambda x: x.TRDAR_CD).collect())
+        result = result.repartition(1).withColumn(
+            "ADSTRD_CD", udf(lambda id: new_col_val[id])(monotonically_increasing_id())
+        )
 
         # 설정 이후 drop
         self.spark.spark.catalog.dropTempView("df")
@@ -1110,7 +1117,10 @@ class DF(object):
         result = result.select(col("_1.*"), col("_2").alias("RANK14"))
         result = result.select(col("STDR_YY_CD"), col("STDR_QU_CD"), col("TRDAR_CD"), col("RANK14"),)
 
-        result.show(10)
+        new_col_val = get_new_columns(result.rdd.map(lambda x: x.TRDAR_CD).collect())
+        result = result.repartition(1).withColumn(
+            "ADSTRD_CD", udf(lambda id: new_col_val[id])(monotonically_increasing_id())
+        )
 
         # 설정 이후 drop
         self.spark.spark.catalog.dropTempView("df")
@@ -1185,8 +1195,10 @@ class DF(object):
         result = result.rdd.zipWithIndex().toDF()
         result = result.select(col("_1.*"), col("_2").alias("RANK15"))
 
-        result.show(10)
-
+        new_col_val = get_new_columns(result.rdd.map(lambda x: x.TRDAR_CD).collect())
+        result = result.repartition(1).withColumn(
+            "ADSTRD_CD", udf(lambda id: new_col_val[id])(monotonically_increasing_id())
+        )
         # 설정 이후 drop
         self.spark.spark.catalog.dropTempView("df")
         return result
@@ -1235,10 +1247,10 @@ class DF(object):
         final_report_df = final_report_df.rdd.zipWithIndex().toDF()
         final_report_df = final_report_df.select(col("_1.*"), col("_2").alias("RANK"))
 
-        final_report_df.coalesce(1).write.option("header", "true").csv(
-            f"s3a://rtc-result/spark/{year}_{quarter}_report_{int(time.time())}"
-        )
-
+        # final_report_df.coalesce(1).write.option("header", "true").csv(
+        #     f"s3a://rtc-result/spark/{year}_{quarter}_report_{int(time.time())}"
+        # )
+        return final_report_df
         save_df_result = final_report_df.toJSON().map(lambda x: json.loads(x)).collect()
 
         final_report_df.drop()

@@ -2,6 +2,7 @@ import json
 import logging
 import os
 
+import boto3
 from pyspark import SparkConf
 from pyspark.conf import SparkConf
 from pyspark.sql import DataFrame, SparkSession
@@ -32,15 +33,15 @@ class SparkS3(object):
     conf.set("spark.sql.shuffle.partitions", "5")
     conf.set("spark.dynamicAllocation.enabled", "true")
 
-    conf.set("spark.hadoop.fs.s3a.access.key", profile_info["aws_access_key_id"])
-    conf.set("spark.hadoop.fs.s3a.secret.key", profile_info["aws_secret_access_key"])
+    # conf.set("spark.hadoop.fs.s3a.access.key", profile_info["aws_access_key_id"])
+    # conf.set("spark.hadoop.fs.s3a.secret.key", profile_info["aws_secret_access_key"])
 
-    conf.set("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
-    conf.set("spark.hadoop.fs.s3a.path.style.access", "true")
-    conf.set("spark.hadoop.fs.s3a.connection.ssl.enabled", "false")
-    conf.set("spark.hadoop.com.amazonaws.services.s3.enableV2", "true")
-    conf.set("spark.hadoop.fs.s3a.aws.credentials.provider", "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider")
-    conf.set("spark.hadoop.mapreduce.fileoutputcommitter.algorithm.version", 2)
+    # conf.set("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
+    # conf.set("spark.hadoop.fs.s3a.path.style.access", "true")
+    # conf.set("spark.hadoop.fs.s3a.connection.ssl.enabled", "false")
+    # conf.set("spark.hadoop.com.amazonaws.services.s3.enableV2", "true")
+    # conf.set("spark.hadoop.fs.s3a.aws.credentials.provider", "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider")
+    # conf.set("spark.hadoop.mapreduce.fileoutputcommitter.algorithm.version", 2)
 
     # 용량이 커서 설정해야 함
     conf.set("spark.hadoop.fs.s3a.multipart.size", 104857600)
@@ -50,7 +51,14 @@ class SparkS3(object):
 
     spark = None
 
-    send_bucket = "rtc-raw-data"
+    get_bucket = "rtc-raw-data"
+    send_bucket = "rtc-result"
+
+    s3_client = boto3.client(
+        "s3",
+        aws_access_key_id=profile_info["aws_access_key_id"],
+        aws_secret_access_key=profile_info["aws_secret_access_key"],
+    )
 
     def __init__(self):
         logging.error("spark start")
@@ -59,20 +67,51 @@ class SparkS3(object):
     def stop_spark(self):
         self.spark.stop()
 
-    def get_file(self, file_name="convert_code.csv") -> DataFrame:
-        try:
-            file_name = f"s3://{self.send_bucket}/{file_name}"
+    def send_file(self, save_df_result: DataFrame, key: str):
+        df = save_df_result.toJSON().map(lambda x: json.loads(x)).collect()
+        self.s3_client.put_object(
+            Body=json.dumps(df), Bucket=self.send_bucket, Key=key,
+        )
 
-            print(f"trying {file_name}")
+    def get_file(self, file_name="test_three.csv") -> DataFrame:
+        try:
+            file_path = f"Downloads/{file_name}"
+
+            if not os.path.exists("Downloads"):
+                os.mkdir("Downloads")
+
+            if not os.path.exists(file_path):
+                self.s3_client.download_file(Bucket=self.get_bucket, Key=file_name, Filename=file_path)
+
             df_spark = (
                 self.spark.read.format("csv")
                 .option("encoding", "euc-kr")
                 .option("header", True)
-                .option("inferSchema", False)
-                .load(file_name)
+                .option("inferSchema", True)
+                .csv(file_path)
                 .coalesce(1)
             )
+
             return df_spark
-        except Exception as e:
-            logging.error(e.__str__())
+        except:
+            logging.error("no file exists")
             return None
+
+    # def get_file(self, file_name="convert_code.csv") -> DataFrame:
+    #     try:
+    #         file_name = f"s3://{self.send_bucket}/{file_name}"
+    #         file_name = "Downloads/convert_code.csv"
+
+    #         print(f"trying {file_name}")
+    #         df_spark = (
+    #             self.spark.read.format("csv")
+    #             .option("encoding", "euc-kr")
+    #             .option("header", True)
+    #             .option("inferSchema", False)
+    #             .load(file_name)
+    #             .coalesce(1)
+    #         )
+    #         return df_spark
+    #     except Exception as e:
+    #         logging.error(e.__str__())
+    #         return None

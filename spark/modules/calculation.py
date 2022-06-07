@@ -66,9 +66,6 @@ class Calculate(object):
                     if num not in full_dict[year][quarter]:
                         full_dict[year][quarter][num] = None
 
-                        if num in [3, 7, 8, 15]:
-                            self.update_result_df_with_zero(num)
-                            continue
                         try:
                             part_df_list = []
                             page = 1

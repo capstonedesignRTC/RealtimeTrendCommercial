@@ -1,13 +1,15 @@
 FROM ubuntu:18.04
 
-MAINTAINER red131729@khu.ac.kr
+LABEL email="red131729@khu.ac.kr"
+LABEL version="1.5"
+LABEL description="2022 Capstone Design 1 - Real-Time Trend Commercial Analysis"
 
 ARG spark_version=3.1.1
 ARG DYNAMIC_JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
 ARG HADOOP_HOME=/opt/hadoop/hadoop-3.2.3
 ARG SPARK_HOME=/opt/spark/spark-3.1.3-bin-hadoop3.2.tgz
 
-## java
+### java
 RUN apt-get update -y \
     &&  apt-get install wget -y \
     &&  apt-get install vim unzip ssh openjdk-8-jdk -y \
@@ -45,11 +47,10 @@ RUN mkdir /opt/hadoop && \
 
 ENV HADOOP_HOME /opt/hadoop/hadoop-3.2.3
 RUN export HADOOP_HOME
-RUN echo ${HADOOP_HOME}
 ENV PATH=${HADOOP_HOME}/bin:$PATH
 
-
 ### jar downloads
+
 # aws-java-sdk 1.7.4
 RUN wget https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-bundle/1.11.901/aws-java-sdk-bundle-1.11.901.jar && \
     mv aws-java-sdk-bundle-1.11.901.jar ${SPARK_HOME}/jars
@@ -62,4 +63,4 @@ WORKDIR /home
 COPY . .
 
 RUN pip3 install -r requirements.txt
-CMD [ "python3", "main.py" ]
+CMD [ "spark-submit", "main.py" ]

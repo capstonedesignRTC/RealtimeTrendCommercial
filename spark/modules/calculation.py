@@ -4,12 +4,11 @@ import time
 
 import pyspark.sql.functions as F
 from pyspark.sql import DataFrame
-from pyspark.sql.functions import col, lit
-from spark.spark_configure import SparkS3
+from pyspark.sql.functions import lit
+from spark.configure import SparkS3
 
 from modules.dataframe import DF
-from modules.utils import CODE
-from utils.utils import get_sys_args
+from modules.utils import CODE, get_sys_args
 
 
 class Calculate(object):
@@ -36,10 +35,9 @@ class Calculate(object):
         rdd = self.df_func.spark.spark.sparkContext.parallelize(pre_data)
         unknown_df = self.df_func.spark.spark.createDataFrame(rdd, self.df_func.schema)
         self.result = self.result.unionByName(unknown_df)
-        print("new self.result")
+        print("create new dataframe")
 
     def update_result_df(self, df: DataFrame):
-
         self.result = self.result.join(other=df, on=["STDR_YY_CD", "STDR_QU_CD", "ADSTRD_CD"], how="fullouter").fillna(
             0
         )
@@ -49,14 +47,14 @@ class Calculate(object):
 
     def update_final_result_df(self, year: int = 2018, quarter: int = 1):
         result = self.df_func.update_result_empty_col(self.result)
-        result = self.df_func.calc_final_result(result, year, quarter)
+        result = self.df_func.calc_final_result(result)
         self.spark.send_file(result, f"result/new/{year}_{quarter}_report.json")
 
     def calculation_all_founds(self):
         years, quarters, funcs = get_sys_args(self.specific_args)
 
         full_dict = {}
-        for year in [2019, 2020, 2021, 2022, 2018]:  # 해당 년도 가져오기
+        for year in years:
             if year not in full_dict:
                 full_dict[year] = {}
             for quarter in quarters:
@@ -64,7 +62,7 @@ class Calculate(object):
                 if quarter not in full_dict[year]:
                     full_dict[year][quarter] = {}
 
-                for num in funcs:  # 해당 함수들을 가져오기
+                for num in funcs:
                     if num not in full_dict[year][quarter]:
                         full_dict[year][quarter][num] = None
 
@@ -83,7 +81,6 @@ class Calculate(object):
                                 part_df_list.append(df_spark)
                                 if page == 100:
                                     break
-                                break
 
                             full_df = part_df_list.pop()
                             while part_df_list:
@@ -94,7 +91,6 @@ class Calculate(object):
                                 except:
                                     pass
                             full_dict[year][quarter][num] = full_df
-
                             print("add dictionary")
                         except:
                             continue
@@ -103,22 +99,21 @@ class Calculate(object):
                         full_df = full_dict[year][quarter][num]
 
                         if full_df is None:
-                            logging.error(f"fail file name : {file_name}")
+                            logging.info(f"fail file name : {file_name}")
                             self.update_result_df_with_zero(num)
                             continue
                         else:
-                            logging.error(f"got file name : {file_name}")
+                            logging.info(f"got file name : {file_name}")
                             df_func, df_calc_func = self.df_func.get_function(num)
-                            df_data = df_func(full_df)  # 우선은 분리시켜놓고 나중에 합치던가 하자
+                            df_data = df_func(full_df)
                             result_df = df_calc_func(df_data, quarter)
 
                             result_df.show(10)
                             self.update_result_df(df=result_df)
-                            logging.error(f"process success")
+                            logging.info(f"process success")
 
                             print("data send start")
                             self.spark.send_file(result_df, f"logs/new/{num}_{year}_{quarter}_report.json")
-                            print("data send end")
 
                     except Exception as e:
                         print(e.__str__())

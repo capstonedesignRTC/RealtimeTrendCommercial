@@ -1,6 +1,6 @@
 api_data
 spark/utils/my_secret.py\
-spark/.env
+
 spark/utils/*.csv
 .env
 spark/.vscode

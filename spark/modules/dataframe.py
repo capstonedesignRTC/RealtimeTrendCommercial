@@ -2,25 +2,22 @@ import json
 import logging
 import time
 
-import pyspark.sql.functions as F
-from pyspark import SQLContext
 from pyspark.sql import DataFrame
 from pyspark.sql import functions as F
 from pyspark.sql.functions import col, lit, monotonically_increasing_id, udf, when
 from pyspark.sql.types import IntegerType, StringType, StructField, StructType
-from spark.spark_configure import SparkResult
+from spark.configure import SparkResult
 
 from modules.utils import CONVERT_CODE
 
 
 def get_big_code(code):
     code = str(code)
-    for big, val1 in CONVERT_CODE.items():
+    for val1 in CONVERT_CODE.values():
         for middle, val2 in val1.items():
             for small in val2.keys():
                 if small == code:
                     return int(middle)
-
     return None
 
 
@@ -101,7 +98,6 @@ class DF(object):
             col("SUN_FLPOP_CO"),  # col("일요일_생활인구_수").alias("SUN_FLPOP_CO"),
         )
 
-        # df_spark.show(8)
         return df_spark
 
     def calculate_one(self, df_data: DataFrame, quarter: int = 1):
@@ -178,9 +174,7 @@ class DF(object):
             "ADSTRD_CD", udf(lambda id: new_col_val[id])(monotonically_increasing_id())
         )
 
-        # 설정 이후 drop
         self.spark.spark.catalog.dropTempView("df")
-
         return result
 
     def seoul_two(self, df_spark: DataFrame) -> DataFrame:
@@ -223,7 +217,7 @@ class DF(object):
             col("TRDAR_CD"),
             col("TOT_WRC_POPLTN_CO"),
             col("AGRDE_30_WRC_POPLTN_CO"),
-            col("AGRDE_40_WRC_POPLTN_CO"),  # 기준 년 코드  # 기준 분기 코드  # 상권_코드
+            col("AGRDE_40_WRC_POPLTN_CO"),
         )
         df_one = df_data_one.orderBy(
             col("TOT_WRC_POPLTN_CO").desc(), col("AGRDE_30_WRC_POPLTN_CO").desc(), col("AGRDE_40_WRC_POPLTN_CO").desc(),
@@ -243,7 +237,7 @@ class DF(object):
             col("TRDAR_CD"),
             col("ML_WRC_POPLTN_CO"),
             col("AGRDE_40_WRC_POPLTN_CO"),
-            col("AGRDE_50_WRC_POPLTN_CO"),  # 기준 년 코드  # 기준 분기 코드
+            col("AGRDE_50_WRC_POPLTN_CO"),
         )
         df_two = df_data_two.orderBy(
             col("ML_WRC_POPLTN_CO").desc(), col("AGRDE_40_WRC_POPLTN_CO").desc(), col("AGRDE_50_WRC_POPLTN_CO").desc(),
@@ -271,7 +265,6 @@ class DF(object):
             "ADSTRD_CD", udf(lambda id: new_col_val[id])(monotonically_increasing_id())
         )
 
-        # 설정 이후 drop
         self.spark.spark.catalog.dropTempView("df")
         return result
 
@@ -306,7 +299,7 @@ class DF(object):
 
         return df_spark
 
-    def calculate_three(self, df_data: DataFrame, quarter: int = 1):  # , big: int, middle: int, small: int):
+    def calculate_three(self, df_data: DataFrame, quarter: int = 1):
         logging.error("calculate_three start")
         df_data.createOrReplaceTempView("df")
 
@@ -324,7 +317,7 @@ class DF(object):
             col("TOT_FLPOP_CO"),
             col("AGRDE_20_FLPOP_CO"),
             col("SAT_FLPOP_CO"),
-            col("SUN_FLPOP_CO"),  # 기준 년 코드  # 기준 분기 코드
+            col("SUN_FLPOP_CO"),
         )
         df_one = df_data_one.orderBy(
             col("TOT_FLPOP_CO").desc(),
@@ -348,7 +341,7 @@ class DF(object):
             col("FML_FLPOP_CO"),
             col("AGRDE_30_FLPOP_CO"),
             col("AGRDE_40_FLPOP_CO"),
-            col("TOT_FLPOP_CO"),  # 기준 년 코드  # 기준 분기 코드
+            col("TOT_FLPOP_CO"),
         )
         df_two = df_data_two.orderBy(
             col("FML_FLPOP_CO").desc(),
@@ -379,7 +372,6 @@ class DF(object):
             "ADSTRD_CD", udf(lambda id: new_col_val[id])(monotonically_increasing_id())
         )
 
-        # 설정 이후 drop
         self.spark.spark.catalog.dropTempView("df")
         return result
 
@@ -424,7 +416,7 @@ class DF(object):
             col("TRDAR_CD"),
             col("TOT_WRC_POPLTN_CO"),
             col("AGRDE_30_WRC_POPLTN_CO"),
-            col("AGRDE_40_WRC_POPLTN_CO"),  # 기준 년 코드  # 기준 분기 코드  # 상권_코드
+            col("AGRDE_40_WRC_POPLTN_CO"),
         )
         df_one = df_data_one.orderBy(
             col("TOT_WRC_POPLTN_CO").desc(), col("AGRDE_30_WRC_POPLTN_CO").desc(), col("AGRDE_40_WRC_POPLTN_CO").desc(),
@@ -444,7 +436,7 @@ class DF(object):
             col("TRDAR_CD"),
             col("ML_WRC_POPLTN_CO"),
             col("AGRDE_40_WRC_POPLTN_CO"),
-            col("AGRDE_50_WRC_POPLTN_CO"),  # 기준 년 코드  # 기준 분기 코드
+            col("AGRDE_50_WRC_POPLTN_CO"),
         )
         df_two = df_data_two.orderBy(
             col("ML_WRC_POPLTN_CO").desc(), col("AGRDE_40_WRC_POPLTN_CO").desc(), col("AGRDE_50_WRC_POPLTN_CO").desc(),
@@ -472,7 +464,6 @@ class DF(object):
             "ADSTRD_CD", udf(lambda id: new_col_val[id])(monotonically_increasing_id())
         )
 
-        # 설정 이후 drop
         self.spark.spark.catalog.dropTempView("df")
         return result
 
@@ -522,7 +513,7 @@ class DF(object):
             col("TOT_REPOP_CO"),
             col("AGRDE_30_REPOP_CO"),
             col("AGRDE_40_REPOP_CO"),
-        )  # 기준 년 코드  # 기준 분기 코드  # 상권_코드
+        )
         df_one = df_data_one.orderBy(
             col("TOT_REPOP_CO").desc(), col("AGRDE_30_REPOP_CO").desc(), col("AGRDE_40_REPOP_CO").desc(),
         )
@@ -542,7 +533,7 @@ class DF(object):
             col("TOT_HSHLD_CO"),
             col("APT_HSHLD_CO"),
             col("NON_APT_HSHLD_CO"),
-        )  # 기준 년 코드  # 기준 분기 코드
+        )
         df_two = df_data_two.orderBy(
             col("TOT_HSHLD_CO").desc(), col("APT_HSHLD_CO").desc(), col("NON_APT_HSHLD_CO").desc(),
         )
@@ -568,7 +559,7 @@ class DF(object):
         result = result.repartition(1).withColumn(
             "ADSTRD_CD", udf(lambda id: new_col_val[id])(monotonically_increasing_id())
         )
-        # 설정 이후 drop
+
         self.spark.spark.catalog.dropTempView("df")
         return result
 
@@ -601,7 +592,7 @@ class DF(object):
         logging.error("calculate_six start")
         df_data.createOrReplaceTempView("df")
 
-        df_data = df_data.filter(col("STDR_QU_CD") == 4)
+        df_data = df_data.filter(col("STDR_QU_CD") == quarter)
         if df_data.rdd.isEmpty():
             return None
 
@@ -702,7 +693,7 @@ class DF(object):
 
         df_data_one = df_data.select(
             col("STDR_YY_CD"), col("STDR_QU_CD"), col("TRDAR_CD"), col("MDWK_SELNG_RATE"), col("WKEND_SELNG_RATE"),
-        )  # 기준 년 코드  # 기준 분기 코드  # 상권_코드
+        )
         df_one = df_data_one.orderBy(col("MDWK_SELNG_RATE").desc(), col("WKEND_SELNG_RATE").desc(),)
 
         df_one = df_one.rdd.zipWithIndex().toDF()
@@ -717,7 +708,7 @@ class DF(object):
             col("STDR_YY_CD"),
             col("STDR_QU_CD"),
             col("TRDAR_CD"),
-            (col("MDWK_SELNG_AMT") / col("MDWK_SELNG_CO")).alias("mdwk_amt_per_co"),  # # 컬럼끼리 나눠 계산
+            (col("MDWK_SELNG_AMT") / col("MDWK_SELNG_CO")).alias("mdwk_amt_per_co"),
             (col("WKEND_SELNG_AMT") / col("WKEND_SELNG_CO")).alias("wkend_amt_per_co"),
         )
 
@@ -740,7 +731,7 @@ class DF(object):
             col("STDR_QU_CD"),
             col("TRDAR_CD"),
             (col("ML_SELNG_AMT") / col("ML_SELNG_CO")).alias("ml_amt_per_co"),
-        )  # # 컬럼끼리 나눠 계산
+        )
 
         df_three = df_data_three.orderBy(col("ml_amt_per_co").desc())
 
@@ -757,7 +748,7 @@ class DF(object):
             col("STDR_QU_CD"),
             col("TRDAR_CD"),
             (col("FML_SELNG_AMT") / col("FML_SELNG_CO")).alias("fml_amt_per_co"),
-        )  # # 컬럼끼리 나눠 계산
+        )
 
         df_four = df_data_four.orderBy(col("fml_amt_per_co").desc())
 
@@ -787,7 +778,6 @@ class DF(object):
             "ADSTRD_CD", udf(lambda id: new_col_val[id])(monotonically_increasing_id())
         )
 
-        # 설정 이후 drop
         self.spark.spark.catalog.dropTempView("df")
         return result
 
@@ -855,7 +845,7 @@ class DF(object):
 
         df_data_one = df_data.select(
             col("STDR_YY_CD"), col("STDR_QU_CD"), col("TRDAR_CD"), col("MDWK_SELNG_RATE"), col("WKEND_SELNG_RATE"),
-        )  # 기준 년 코드  # 기준 분기 코드  # 상권_코드
+        )
         df_one = df_data_one.orderBy(col("MDWK_SELNG_RATE").desc(), col("WKEND_SELNG_RATE").desc(),)
 
         df_one = df_one.rdd.zipWithIndex().toDF()
@@ -870,7 +860,7 @@ class DF(object):
             col("STDR_YY_CD"),
             col("STDR_QU_CD"),
             col("TRDAR_CD"),
-            (col("MDWK_SELNG_AMT") / col("MDWK_SELNG_CO")).alias("mdwk_amt_per_co"),  # # 컬럼끼리 나눠 계산
+            (col("MDWK_SELNG_AMT") / col("MDWK_SELNG_CO")).alias("mdwk_amt_per_co"),
             (col("WKEND_SELNG_AMT") / col("WKEND_SELNG_CO")).alias("wkend_amt_per_co"),
         )
 
@@ -893,7 +883,7 @@ class DF(object):
             col("STDR_QU_CD"),
             col("TRDAR_CD"),
             (col("ML_SELNG_AMT") / col("ML_SELNG_CO")).alias("ml_amt_per_co"),
-        )  # # 컬럼끼리 나눠 계산
+        )
 
         df_three = df_data_three.orderBy(col("ml_amt_per_co").desc())
 
@@ -910,7 +900,7 @@ class DF(object):
             col("STDR_QU_CD"),
             col("TRDAR_CD"),
             (col("FML_SELNG_AMT") / col("FML_SELNG_CO")).alias("fml_amt_per_co"),
-        )  # # 컬럼끼리 나눠 계산
+        )
 
         df_four = df_data_four.orderBy(col("fml_amt_per_co").desc())
 
@@ -938,7 +928,6 @@ class DF(object):
             "ADSTRD_CD", udf(lambda id: new_col_val[id])(monotonically_increasing_id())
         )
 
-        # 설정 이후 drop
         self.spark.spark.catalog.dropTempView("df")
         return result
 
@@ -989,7 +978,7 @@ class DF(object):
         """
         df_data_one = df_data.select(
             col("STDR_YY_CD"), col("STDR_QU_CD"), col("TRDAR_CD"), col("AVRG_AE"), col("AVRG_MKTC"),
-        )  # 기준 년 코드  # 기준 분기 코드  # 상권_코드
+        )
         df_one = df_data_one.orderBy(col("AVRG_MKTC").asc(), col("AVRG_AE").asc())
 
         result = df_one.rdd.zipWithIndex().toDF()
@@ -1002,7 +991,6 @@ class DF(object):
             "ADSTRD_CD", udf(lambda id: new_col_val[id])(monotonically_increasing_id())
         )
 
-        # 설정 이후 drop
         self.spark.spark.catalog.dropTempView("df")
         return result
 
@@ -1037,7 +1025,7 @@ class DF(object):
         """
         df_data_one = df_data.select(
             col("STDR_YY_CD"), col("STDR_QU_CD"), col("TRDAR_CD"), col("AVRG_AE"), col("AVRG_MKTC"),
-        )  # 기준 년 코드  # 기준 분기 코드  # 상권_코드
+        )
         df_one = df_data_one.orderBy(col("AVRG_MKTC").asc(), col("AVRG_AE").asc())
 
         result = df_one.rdd.zipWithIndex().toDF()
@@ -1050,7 +1038,6 @@ class DF(object):
             "ADSTRD_CD", udf(lambda id: new_col_val[id])(monotonically_increasing_id())
         )
 
-        # 설정 이후 drop
         self.spark.spark.catalog.dropTempView("df")
         return result
 
@@ -1097,7 +1084,7 @@ class DF(object):
             col("TRDAR_CHNGE_IX"),
             col("SU_OPR_SALE_MT_AVRG"),
             col("SU_CLS_SALE_MT_AVRG"),
-        )  # 기준 년 코드  # 기준 분기 코드
+        )
 
         df_data_one = df_data_one.withColumn(
             "TRDAR_CHNGE_IX",
@@ -1121,7 +1108,6 @@ class DF(object):
             "ADSTRD_CD", udf(lambda id: new_col_val[id])(monotonically_increasing_id())
         )
 
-        # 설정 이후 drop
         self.spark.spark.catalog.dropTempView("df")
         return result
 
@@ -1161,7 +1147,7 @@ class DF(object):
         """
         df_data_one = df_data.select(
             col("STDR_YY_CD"), col("STDR_QU_CD"), col("TRDAR_CD"), col("OPBIZ_RT"), col("CLSBIZ_RT"),
-        )  # 기준 년 코드  # 기준 분기 코드  # 상권_코드
+        )
         df_one = df_data_one.orderBy(col("CLSBIZ_RT").desc(), col("OPBIZ_RT").asc())
 
         df_one = df_one.rdd.zipWithIndex().toDF()
@@ -1174,7 +1160,7 @@ class DF(object):
         """
         df_data_two = df_data.select(
             col("STDR_YY_CD"), col("STDR_QU_CD"), col("TRDAR_CD"), col("STOR_CO"), col("FRC_STOR_CO"),
-        )  # 기준 년 코드  # 기준 분기 코드
+        )
         df_two = df_data_two.orderBy(col("STOR_CO").desc(), col("FRC_STOR_CO").desc())
 
         df_two = df_two.rdd.zipWithIndex().toDF()
@@ -1199,7 +1185,6 @@ class DF(object):
             "ADSTRD_CD", udf(lambda id: new_col_val[id])(monotonically_increasing_id())
         )
 
-        # 설정 이후 drop
         self.spark.spark.catalog.dropTempView("df")
         return result
 
@@ -1224,10 +1209,7 @@ class DF(object):
 
         return df
 
-    def calc_final_result(self, df: DataFrame, year, quarter):
-
-        df = df.join(df, ["STDR_YY_CD", "STDR_QU_CD", "TRDAR_CD"])
-
+    def calc_final_result(self, df: DataFrame) -> DataFrame:
         final_report_df = df.withColumn(
             "TOTAL_SCORE",
             (
@@ -1246,191 +1228,118 @@ class DF(object):
             ).alias("TOTAL_SCORE"),
         )
         df.drop()
+
+        if "TRDAR_CD" in final_report_df.columns:
+            final_report_df = final_report_df.select(
+                col("STDR_YY_CD"),
+                col("STDR_QU_CD"),
+                col("ADSTRD_CD"),
+                col("TRDAR_CD"),
+                col("RANK1"),
+                col("RANK2"),
+                col("RANK3"),
+                col("RANK4"),
+                col("RANK5"),
+                col("RANK6"),
+                col("RANK7"),
+                col("RANK8"),
+                col("RANK10"),
+                col("RANK11"),
+                col("RANK14"),
+                col("RANK15"),
+                col("TOTAL_SCORE"),
+            )
+
         final_report_df = final_report_df.orderBy(col("TOTAL_SCORE").desc())
         final_report_df = final_report_df.rdd.zipWithIndex().toDF()
         final_report_df = final_report_df.select(col("_1.*"), col("_2").alias("RANK"))
 
-        # final_report_df.coalesce(1).write.option("header", "true").csv(
-        #     f"s3a://rtc-result/spark/{year}_{quarter}_report_{int(time.time())}"
-        # )
         return final_report_df
-        save_df_result = final_report_df.toJSON().map(lambda x: json.loads(x)).collect()
 
-        final_report_df.drop()
-        return save_df_result
+    def seoul_twelve(self, df_spark: DataFrame) -> DataFrame:
+        # https://data.seoul.go.kr/dataList/OA-15567/S/1/datasetView.do
+        # 서울시 우리마을가게 상권분석서비스(자치구별 상권변화지표)
 
-        # def seoul_twelve(self, df_spark: DataFrame) -> DataFrame:
-        #     # https://data.seoul.go.kr/dataList/OA-15567/S/1/datasetView.do
-        #     # 서울시 우리마을가게 상권분석서비스(자치구별 상권변화지표)
+        # LL(다이나믹) : 도시재생 및 신규 개발 상권으로 창업 진출입시 세심한 주의가 필요한 상권(지역), 특정시점 사업체의 영업기간이 서울시 평균 생존영업기간보다 낮고, 서울시 평균 폐업영업기간보다 낮은 상권(지역)
+        # LH(상권확장) : 경쟁력 있는 신규 창업 우위 상권(지역), 특정 시점 사업체의 영업기간이 서울시 평균 생존영업기간보다 낮고, 서울시 평균 폐업영업기간보다 높은 상권(지역)
+        # HL(상권축소) : 경쟁력 있는 기존 업체 우위 상권(지역), 특정 시점 사업체의 영업기간이 서울시 평균 생존영업기간보다 높고, 서울시 평균 폐업영업기간보다 낮은 상권(지역)
+        # HH(정체) : 창업 진출입시 세심한 주의 상권(지역), 특정 시점 사업체의 영업기간이 서울시 평균 생존영업기간보다 높고, 서울시 평균 폐업영업기간보다 높은 상권(지역)
 
-        #     # LL(다이나믹) : 도시재생 및 신규 개발 상권으로 창업 진출입시 세심한 주의가 필요한 상권(지역), 특정시점 사업체의 영업기간이 서울시 평균 생존영업기간보다 낮고, 서울시 평균 폐업영업기간보다 낮은 상권(지역)
-        #     # LH(상권확장) : 경쟁력 있는 신규 창업 우위 상권(지역), 특정 시점 사업체의 영업기간이 서울시 평균 생존영업기간보다 낮고, 서울시 평균 폐업영업기간보다 높은 상권(지역)
-        #     # HL(상권축소) : 경쟁력 있는 기존 업체 우위 상권(지역), 특정 시점 사업체의 영업기간이 서울시 평균 생존영업기간보다 높고, 서울시 평균 폐업영업기간보다 낮은 상권(지역)
-        #     # HH(정체) : 창업 진출입시 세심한 주의 상권(지역), 특정 시점 사업체의 영업기간이 서울시 평균 생존영업기간보다 높고, 서울시 평균 폐업영업기간보다 높은 상권(지역)
+        df_spark = df_spark.select(
+            # 구분 코드
+            col("STDR_YY_CD"),  # col("기준_년_코드").alias("STDR_YY_CD"),
+            col("STDR_QU_CD"),  # col("기준_분기_코드").alias("STDR_QU_CD"),
+            col("시군구_코드").alias("SIGNGU_CD"),
+            # 상권 지표
+            col("상권_변화_지표").alias("TRDAR_CHNGE_IX"),
+            col("운영_영업_개월_평균").alias("OPR_SALE_MT_AVRG"),
+            col("폐업_영업_개월_평균").alias("CLS_SALE_MT_AVRG"),
+            col("서울_운영_영업_개월_평균").alias("SU_OPR_SALE_MT_AVRG"),
+            col("서울_폐업_영업_개월_평균").alias("SU_CLS_SALE_MT_AVRG"),
+        )
 
-        #     df_spark = df_spark.select(
-        #         # 구분 코드
-        #         col("STDR_YY_CD"),  # col("기준_년_코드").alias("STDR_YY_CD"),
-        #         col("STDR_QU_CD"),  # col("기준_분기_코드").alias("STDR_QU_CD"),
-        #         col("시군구_코드").alias("SIGNGU_CD"),
-        #         # 상권 지표
-        #         col("상권_변화_지표").alias("TRDAR_CHNGE_IX"),
-        #         col("운영_영업_개월_평균").alias("OPR_SALE_MT_AVRG"),
-        #         col("폐업_영업_개월_평균").alias("CLS_SALE_MT_AVRG"),
-        #         col("서울_운영_영업_개월_평균").alias("SU_OPR_SALE_MT_AVRG"),
-        #         col("서울_폐업_영업_개월_평균").alias("SU_CLS_SALE_MT_AVRG"),
-        #     )
+        return df_spark
 
-        #     return df_spark
+    def seoul_thirteen(self, df_spark: DataFrame) -> DataFrame:
+        # https://data.seoul.go.kr/dataList/OA-15575/S/1/datasetView.do
+        # 서울시 우리마을가게 상권분석서비스(행정동별 상권변화지표)
 
-        # def calculate_twelve(self, df_data: DataFrame, quarter : int = 1):
-        #     logging.error("calculate_twelve start")
-        #     df_data.createOrReplaceTempView("df")
+        # LL(다이나믹) : 도시재생 및 신규 개발 상권으로 창업 진출입시 세심한 주의가 필요한 상권(지역), 특정시점 사업체의 영업기간이 서울시 평균 생존영업기간보다 낮고, 서울시 평균 폐업영업기간보다 낮은 상권(지역)
+        # LH(상권확장) : 경쟁력 있는 신규 창업 우위 상권(지역), 특정 시점 사업체의 영업기간이 서울시 평균 생존영업기간보다 낮고, 서울시 평균 폐업영업기간보다 높은 상권(지역)
+        # HL(상권축소) : 경쟁력 있는 기존 업체 우위 상권(지역), 특정 시점 사업체의 영업기간이 서울시 평균 생존영업기간보다 높고, 서울시 평균 폐업영업기간보다 낮은 상권(지역)
+        # HH(정체) : 창업 진출입시 세심한 주의 상권(지역), 특정 시점 사업체의 영업기간이 서울시 평균 생존영업기간보다 높고, 서울시 평균 폐업영업기간보다 높은 상권(지역)
 
-        #     ve:
-        #         """
-        #         방법 1
-        #         서울_운영_영업_개월_평균, 상권_변화_지표, 서울_폐업_영업_개월_평균_-1
-        #         """
-        #         df_data_one = df_data.select(
-        #             col("STDR_YY_CD"),  # 기준 년 코드
-        #             col("STDR_QU_CD"),  # 기준 분기 코드
-        #             col("SIGNGU_CD"),
-        #             col("TRDAR_CHNGE_IX"),
-        #             col("SU_OPR_SALE_MT_AVRG"),
-        #             col("SU_CLS_SALE_MT_AVRG"),
-        #         )
+        df_spark = df_spark.select(
+            # 구분 코드
+            col("STDR_YY_CD"),  # col("기준_년_코드").alias("STDR_YY_CD"),
+            col("STDR_QU_CD"),  # col("기준_분기_코드").alias("STDR_QU_CD"),
+            col("행정동_코드").alias("ADSTRD_CD"),
+            # 상권 지표
+            col("상권_변화_지표").alias("TRDAR_CHNGE_IX"),
+            col("운영_영업_개월_평균").alias("OPR_SALE_MT_AVRG"),
+            col("폐업_영업_개월_평균").alias("CLS_SALE_MT_AVRG"),
+            col("서울_운영_영업_개월_평균").alias("SU_OPR_SALE_MT_AVRG"),
+            col("서울_폐업_영업_개월_평균").alias("SU_CLS_SALE_MT_AVRG"),
+        )
 
-        #         df_data_one = df_data_one.withColumn(
-        #             "TRDAR_CHNGE_IX",
-        #             when(col("TRDAR_CHNGE_IX") == "LL", 4)
-        #             .when(col("TRDAR_CHNGE_IX") == "LH", 3)
-        #             .when(col("TRDAR_CHNGE_IX") == "HL", 2)
-        #             .otherwise(1),
-        #         )
+        return df_spark
 
-        #         df_data_one = df_data_one.orderBy(
-        #             col("SU_OPR_SALE_MT_AVRG").asc(), col("TRDAR_CHNGE_IX").asc(), col("SU_CLS_SALE_MT_AVRG").desc(),
-        #         )
+    def seoul_sixteen(self, df_spark: DataFrame) -> DataFrame:
+        # https://data.seoul.go.kr/dataList/OA-20471/S/1/datasetView.do
+        # 서울시 불법주정차/전용차로 위반 단속 CCTV 위치정보
 
-        #         result = df_data_one.rdd.zipWithIndex().toDF()
-        #         df_data_one.drop()
-        #         result = result.select(col("_1.*"), col("_2").alias("RANK12"))
-        #         result = result.select(col("STDR_YY_CD"), col("STDR_QU_CD"), col("SIGNGU_CD"), col("RANK12"),)
+        df_spark = df_spark.select(
+            # 구분 코드
+            col("자치구").alias("PSTINST_CD"),
+            col("위도").alias("LATITUDE"),
+            col("경도").alias("LONGITUDE"),
+        )
 
-        #         result.show(10)
+        return df_spark
 
-        #         # 설정 이후 drop
-        #         self.spark.spark.catalog.dropTempView("df")
+    def seoul_seventeen(self, df_spark: DataFrame) -> DataFrame:
+        # https://data.seoul.go.kr/dataList/OA-13122/S/1/datasetView.do
+        # 서울시 공영주차장 안내 정보
 
-        #         self.res_twelve = result
+        df_spark = df_spark.select(
+            # 구분 코드
+            col("자치구").alias("PSTINST_CD"),
+            col("위도").alias("LATITUDE"),
+            col("경도").alias("LONGITUDE"),
+        )
 
-        #     return self.res_twelve
+        return df_spark
 
-        # def seoul_thirteen(self, df_spark: DataFrame) -> DataFrame:
-        #     # https://data.seoul.go.kr/dataList/OA-15575/S/1/datasetView.do
-        #     # 서울시 우리마을가게 상권분석서비스(행정동별 상권변화지표)
+    def seoul_eighteen(self, df_spark: DataFrame) -> DataFrame:
+        # http://data.seoul.go.kr/dataList/OA-15410/S/1/datasetView.do
+        # 서울시 건축물대장 법정동 코드정보
 
-        #     # LL(다이나믹) : 도시재생 및 신규 개발 상권으로 창업 진출입시 세심한 주의가 필요한 상권(지역), 특정시점 사업체의 영업기간이 서울시 평균 생존영업기간보다 낮고, 서울시 평균 폐업영업기간보다 낮은 상권(지역)
-        #     # LH(상권확장) : 경쟁력 있는 신규 창업 우위 상권(지역), 특정 시점 사업체의 영업기간이 서울시 평균 생존영업기간보다 낮고, 서울시 평균 폐업영업기간보다 높은 상권(지역)
-        #     # HL(상권축소) : 경쟁력 있는 기존 업체 우위 상권(지역), 특정 시점 사업체의 영업기간이 서울시 평균 생존영업기간보다 높고, 서울시 평균 폐업영업기간보다 낮은 상권(지역)
-        #     # HH(정체) : 창업 진출입시 세심한 주의 상권(지역), 특정 시점 사업체의 영업기간이 서울시 평균 생존영업기간보다 높고, 서울시 평균 폐업영업기간보다 높은 상권(지역)
+        df_spark = df_spark.select(
+            # 구분 코드
+            col("자치구").alias("PSTINST_CD"),
+            col("위도").alias("LATITUDE"),
+            col("경도").alias("LONGITUDE"),
+        )
 
-        #     df_spark = df_spark.select(
-        #         # 구분 코드
-        #         col("STDR_YY_CD"),  # col("기준_년_코드").alias("STDR_YY_CD"),
-        #         col("STDR_QU_CD"),  # col("기준_분기_코드").alias("STDR_QU_CD"),
-        #         col("행정동_코드").alias("ADSTRD_CD"),
-        #         # 상권 지표
-        #         col("상권_변화_지표").alias("TRDAR_CHNGE_IX"),
-        #         col("운영_영업_개월_평균").alias("OPR_SALE_MT_AVRG"),
-        #         col("폐업_영업_개월_평균").alias("CLS_SALE_MT_AVRG"),
-        #         col("서울_운영_영업_개월_평균").alias("SU_OPR_SALE_MT_AVRG"),
-        #         col("서울_폐업_영업_개월_평균").alias("SU_CLS_SALE_MT_AVRG"),
-        #     )
-
-        #     return df_spark
-
-        # def calculate_thirteen(self, df_data: DataFrame, quarter : int = 1):
-        #     logging.error("calculate_thirteen start")
-        #     df_data.createOrReplaceTempView("df")
-
-        #     teen:
-        #         """
-        #         방법 1
-        #         상권_변화_지표, 서울_운영_영업_개월_평균, 서울_폐업_영업_개월_평균_-1
-        #         """
-        #         df_data_one = df_data.select(
-        #             col("STDR_YY_CD"),  # 기준 년 코드
-        #             col("STDR_QU_CD"),  # 기준 분기 코드
-        #             col("ADSTRD_CD"),
-        #             col("TRDAR_CHNGE_IX"),
-        #             col("SU_OPR_SALE_MT_AVRG"),
-        #             col("SU_CLS_SALE_MT_AVRG"),
-        #         )
-
-        #         df_data_one = df_data_one.withColumn(
-        #             "TRDAR_CHNGE_IX",
-        #             when(col("TRDAR_CHNGE_IX") == "LL", 4)
-        #             .when(col("TRDAR_CHNGE_IX") == "LH", 3)
-        #             .when(col("TRDAR_CHNGE_IX") == "HL", 2)
-        #             .otherwise(1),
-        #         )
-
-        #         df_data_one = df_data_one.orderBy(
-        #             col("SU_OPR_SALE_MT_AVRG").asc(), col("TRDAR_CHNGE_IX").asc(), col("SU_CLS_SALE_MT_AVRG").desc(),
-        #         )
-
-        #         result = df_data_one.rdd.zipWithIndex().toDF()
-        #         df_data_one.drop()
-        #         result = result.select(col("_1.*"), col("_2").alias("RANK13"))
-        #         result = result.select(col("STDR_YY_CD"), col("STDR_QU_CD"), col("ADSTRD_CD"), col("RANK13"),)
-
-        #         result.show(10)
-
-        #         # 설정 이후 drop
-        #         self.spark.spark.catalog.dropTempView("df")
-
-        #         self.res_thirteen = result
-
-        #     return self.res_thirteen
-
-        # def seoul_sixteen(self, df_spark: DataFrame) -> DataFrame:
-        #     # https://data.seoul.go.kr/dataList/OA-20471/S/1/datasetView.do
-        #     # 서울시 불법주정차/전용차로 위반 단속 CCTV 위치정보
-
-        #     df_spark = df_spark.select(
-        #         # 구분 코드
-        #         col("자치구").alias("PSTINST_CD"),
-        #         col("위도").alias("LATITUDE"),
-        #         col("경도").alias("LONGITUDE"),
-        #     )
-
-        #     return df_spark
-
-        # def seoul_seventeen(self, df_spark:DataFrame) -> DataFrame:
-        #     # https://data.seoul.go.kr/dataList/OA-13122/S/1/datasetView.do
-        #     # 서울시 공영주차장 안내 정보
-
-        #     df_spark = df_spark.select(
-        #         # 구분 코드
-        #         col("자치구").alias("PSTINST_CD"),
-        #         col("위도").alias("LATITUDE"),
-        #         col("경도").alias("LONGITUDE"),
-        #     )
-
-        #     return df_spark
-
-        # def seoul_eighteen(self, df_spark:DataFrame) -> DataFrame:
-        #     # http://data.seoul.go.kr/dataList/OA-15410/S/1/datasetView.do
-        #     # 서울시 건축물대장 법정동 코드정보
-
-        #     df_spark = df_spark.select(
-        #         # 구분 코드
-        #         col("자치구").alias("PSTINST_CD"),
-        #         col("위도").alias("LATITUDE"),
-        #         col("경도").alias("LONGITUDE"),
-        #     )
-
-    #     return df_spark
+        return df_spark
 

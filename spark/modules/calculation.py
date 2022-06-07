@@ -54,7 +54,7 @@ class Calculate(object):
         years, quarters, funcs = get_sys_args(self.specific_args)
 
         full_dict = {}
-        for year in [2019, 2020, 2021, 2018, 2022]:
+        for year in years:
             if year not in full_dict:
                 full_dict[year] = {}
             for quarter in quarters:
@@ -76,8 +76,6 @@ class Calculate(object):
                                     break
                                 page += 1
                                 part_df_list.append(df_spark)
-                                if page == 100:
-                                    break
 
                             full_df = part_df_list.pop()
                             while part_df_list:

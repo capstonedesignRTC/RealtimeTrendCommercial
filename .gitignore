@@ -1,14 +1,14 @@
 api_data
-spark/utils/my_secret.py\
-
-spark/utils/*.csv
-.env
+spark/utils/my_secret.py
 spark/.vscode
+
+
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
-spark/Results
+
 
 # C extensions
 *.so

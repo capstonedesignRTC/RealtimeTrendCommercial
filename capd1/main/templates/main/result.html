@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>RealtimeTrendCommercial</title>
+</head>
+
+<body>
+    {% for s in sig %}
+    <h1 style="text-align: center; margin-top: 3em; ">서울특별시 {{ s }}</h1>
+    {% endfor %}
+    {% for a in ads %}
+    <h2 style="text-align: center; margin-top: 1em; "> {{ a }} 데이터 살펴보기</h2>
+    {% endfor %}
+
+
+    </h1>
+    {% block content %}
+    {% for result in results %}
+    <div class="results" style="text-align: center;margin-bottom: 2em;">
+        <div class="result" style="text-align: center;">
+            <div>
+                서울특별시 모든 행정동을 기준
+                <p>
+                    📢 {{result.rank}} 등
+                </p>
+                <p>
+                    ✨ {{result.stage}} stage
+                </p>
+
+            </div>
+            <div>
+                ---------------------------------------
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+
+    <h3 style="text-align: center;margin-bottom: 2em;">관련 매물 살펴보기</h3>
+    {% for nemo in nemos %}
+    <div class="nemos" style="text-align: left;margin-bottom: 4em;margin-left: 25%;">
+        ✅ {{nemo.shortAddress}} 근처에 {{nemo.moveInDate}} 가능한 {{nemo.provisionSizePY}} 크기의 {{nemo.buildingTypeName}} 매물이
+        존재
+        </br>
+        {{nemo.title}}이며 {{nemo.floor}} {{nemo.primaryPriceLabel}} 건물이다. (최신 업데이트 : {{nemo.editedDateUtc}}) </br>
+    </div>
+    {% endfor %}
+    {% endblock %}
+
+    <div style="text-align: center;margin-top: 1em;">
+        <a href="/">
+            <input type="button" style="text-align: center;font-size:2em;" value="처음으로 돌아가기">
+        </a>
+    </div>
+
+
+</body>
+
+
+<script type="text/javascript">
+    $('#create_pdf').click(function () {
+        //pdf_wrap을 canvas객체로 변환
+        html2canvas($('#pdf_wrap')[0]).then(function (canvas) {
+            var doc = new jsPDF('p', 'mm', 'a4'); //jspdf객체 생성
+            var imgData = canvas.toDataURL('image/png'); //캔버스를 이미지로 변환
+            doc.addImage(imgData, 'PNG', 0, 0); //이미지를 기반으로 pdf생성
+            doc.save('sample-file.pdf'); //pdf저장
+        });
+    });
+</script>
+
+</html>

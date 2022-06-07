@@ -174,6 +174,7 @@ class DF(object):
             "ADSTRD_CD", udf(lambda id: new_col_val[id])(monotonically_increasing_id())
         )
 
+        result = result.select(col("STDR_YY_CD"), col("STDR_QU_CD"), col("ADSTRD_CD"), col("RANK1"))
         self.spark.spark.catalog.dropTempView("df")
         return result
 
@@ -264,7 +265,7 @@ class DF(object):
         result = result.repartition(1).withColumn(
             "ADSTRD_CD", udf(lambda id: new_col_val[id])(monotonically_increasing_id())
         )
-
+        result = result.select(col("STDR_YY_CD"), col("STDR_QU_CD"), col("ADSTRD_CD"), col("RANK2"))
         self.spark.spark.catalog.dropTempView("df")
         return result
 
@@ -371,7 +372,7 @@ class DF(object):
         result = result.repartition(1).withColumn(
             "ADSTRD_CD", udf(lambda id: new_col_val[id])(monotonically_increasing_id())
         )
-
+        result = result.select(col("STDR_YY_CD"), col("STDR_QU_CD"), col("ADSTRD_CD"), col("RANK3"))
         self.spark.spark.catalog.dropTempView("df")
         return result
 
@@ -463,7 +464,7 @@ class DF(object):
         result = result.repartition(1).withColumn(
             "ADSTRD_CD", udf(lambda id: new_col_val[id])(monotonically_increasing_id())
         )
-
+        result = result.select(col("STDR_YY_CD"), col("STDR_QU_CD"), col("ADSTRD_CD"), col("RANK4"))
         self.spark.spark.catalog.dropTempView("df")
         return result
 
@@ -559,7 +560,7 @@ class DF(object):
         result = result.repartition(1).withColumn(
             "ADSTRD_CD", udf(lambda id: new_col_val[id])(monotonically_increasing_id())
         )
-
+        result = result.select(col("STDR_YY_CD"), col("STDR_QU_CD"), col("ADSTRD_CD"), col("RANK5"))
         self.spark.spark.catalog.dropTempView("df")
         return result
 
@@ -624,8 +625,7 @@ class DF(object):
         result = result.repartition(1).withColumn(
             "ADSTRD_CD", udf(lambda id: new_col_val[id])(monotonically_increasing_id())
         )
-
-        # 설정 이후 drop
+        result = result.select(col("STDR_YY_CD"), col("STDR_QU_CD"), col("ADSTRD_CD"), col("RANK6"))
         self.spark.spark.catalog.dropTempView("df")
         return result
 
@@ -777,7 +777,7 @@ class DF(object):
         result = result.repartition(1).withColumn(
             "ADSTRD_CD", udf(lambda id: new_col_val[id])(monotonically_increasing_id())
         )
-
+        result = result.select(col("STDR_YY_CD"), col("STDR_QU_CD"), col("ADSTRD_CD"), col("RANK7"))
         self.spark.spark.catalog.dropTempView("df")
         return result
 
@@ -927,7 +927,7 @@ class DF(object):
         result = result.repartition(1).withColumn(
             "ADSTRD_CD", udf(lambda id: new_col_val[id])(monotonically_increasing_id())
         )
-
+        result = result.select(col("STDR_YY_CD"), col("STDR_QU_CD"), col("ADSTRD_CD"), col("RANK8"))
         self.spark.spark.catalog.dropTempView("df")
         return result
 
@@ -991,6 +991,7 @@ class DF(object):
             "ADSTRD_CD", udf(lambda id: new_col_val[id])(monotonically_increasing_id())
         )
 
+        result = result.select(col("STDR_YY_CD"), col("STDR_QU_CD"), col("ADSTRD_CD"), col("RANK10"))
         self.spark.spark.catalog.dropTempView("df")
         return result
 
@@ -1037,7 +1038,7 @@ class DF(object):
         result = result.repartition(1).withColumn(
             "ADSTRD_CD", udf(lambda id: new_col_val[id])(monotonically_increasing_id())
         )
-
+        result = result.select(col("STDR_YY_CD"), col("STDR_QU_CD"), col("ADSTRD_CD"), col("RANK11"))
         self.spark.spark.catalog.dropTempView("df")
         return result
 
@@ -1107,7 +1108,7 @@ class DF(object):
         result = result.repartition(1).withColumn(
             "ADSTRD_CD", udf(lambda id: new_col_val[id])(monotonically_increasing_id())
         )
-
+        result = result.select(col("STDR_YY_CD"), col("STDR_QU_CD"), col("ADSTRD_CD"), col("RANK14"))
         self.spark.spark.catalog.dropTempView("df")
         return result
 
@@ -1184,7 +1185,7 @@ class DF(object):
         result = result.repartition(1).withColumn(
             "ADSTRD_CD", udf(lambda id: new_col_val[id])(monotonically_increasing_id())
         )
-
+        result = result.select(col("STDR_YY_CD"), col("STDR_QU_CD"), col("ADSTRD_CD"), col("RANK15"))
         self.spark.spark.catalog.dropTempView("df")
         return result
 
@@ -1228,27 +1229,6 @@ class DF(object):
             ).alias("TOTAL_SCORE"),
         )
         df.drop()
-
-        if "TRDAR_CD" in final_report_df.columns:
-            final_report_df = final_report_df.select(
-                col("STDR_YY_CD"),
-                col("STDR_QU_CD"),
-                col("ADSTRD_CD"),
-                col("TRDAR_CD"),
-                col("RANK1"),
-                col("RANK2"),
-                col("RANK3"),
-                col("RANK4"),
-                col("RANK5"),
-                col("RANK6"),
-                col("RANK7"),
-                col("RANK8"),
-                col("RANK10"),
-                col("RANK11"),
-                col("RANK14"),
-                col("RANK15"),
-                col("TOTAL_SCORE"),
-            )
 
         final_report_df = final_report_df.orderBy(col("TOTAL_SCORE").desc())
         final_report_df = final_report_df.rdd.zipWithIndex().toDF()

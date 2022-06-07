@@ -1,3 +1,7 @@
+spark/*
+capd1/my_secrets.py
+capd1/.venv
+capd1/media
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

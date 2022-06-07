@@ -1,4 +1,6 @@
-from django.http import JsonResponse
+import json
+
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 
 from main.models import Request
@@ -49,16 +51,18 @@ def loading_page(request):
 def result_page(request, code):
     try:
         obj = Request.objects.get(id=int(code))
-
-        obj.signgu_code
-        obj.adstrd_cd
-        results, api_data = show_result(obj)
-
+        results, rank, api_data = show_result(obj)
+        nearbys, rank_neary, _ = show_result(obj, True)
         return render(
             request,
             "main/result.html",
             {
+                "year": [obj.year],
+                "quarter": [obj.quarter],
+                "rank": [rank],
+                "rank_neary": [rank_neary],
                 "results": results,
+                "nearbys": nearbys,
                 "sig": [SEOUL_MUNICIPALITY_CODE.get(str(obj.signgu_code), "서울")],
                 "ads": [CODE.get(str(obj.signgu_code), {}).get(str(obj.adstrd_cd), "여러동")],
                 "nemos": api_data,
@@ -75,4 +79,21 @@ def calculation_process(request):
 
 
 def test(request):
-    return render(request, "main/error.html")
+    obj = Request.objects.order_by("-id")[0]
+    results, rank, api_data = show_result(obj)
+    nearbys, rank_neary, _ = show_result(obj, True)
+    return render(
+        request,
+        "main/result.html",
+        {
+            "year": [obj.year],
+            "quarter": [obj.quarter],
+            "rank": [rank],
+            "rank_neary": [rank_neary],
+            "results": results,
+            "nearbys": nearbys,
+            "sig": [SEOUL_MUNICIPALITY_CODE.get(str(obj.signgu_code), "서울")],
+            "ads": [CODE.get(str(obj.signgu_code), {}).get(str(obj.adstrd_cd), "여러동")],
+            "nemos": api_data,
+        },
+    )

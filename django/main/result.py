@@ -5,18 +5,13 @@ import requests
 from capd1.settings import MEDIA_URL
 
 from main.models import Result
-from main.serializers import ResultsSerializer
-from main.utils import CONVERT_CODE
+from main.utils import CODE, CONVERT_CODE, CONVERT_HJD, FUNC_INFOS, INVERSE_CONVERT_HJD, NEARBY, SEOUL_MUNICIPALITY_CODE
 
 
-def show_result(obj):
-    year = obj.year
-    quarter = obj.quarter
-    signgu_code = obj.signgu_code
-    adstrd_cd = obj.adstrd_cd
-    result_list = []
+def show_big_result(year, quarter, signgu_code, adstrd_cd):
 
     file_name = f"{MEDIA_URL}{year}_{quarter}_report.json"
+    result_list = list()
     results = read_big_file(file_name, str(adstrd_cd))
     for res in results:
         rank = res.get("RANK", -1)
@@ -40,39 +35,7 @@ def show_result(obj):
         )
         result_list.append(obj)
 
-    for funcs in [1, 2, 3, 4, 5, 6, 7, 8, 10, 14, 15]:
-        file_name = f"{MEDIA_URL}{funcs}_{year}_{quarter}_report.json"
-        func_res = file_read(file_name, adstrd_cd)
-
-        for func_r in func_res:
-            rank = res.get(f"RANK{funcs}", -1)
-            if rank < 100 and rank != -1:
-                stage = 5
-            elif rank < 300:
-                stage = 4
-            elif rank < 500:
-                stage = 3
-            elif rank < 700:
-                stage = 2
-            else:
-                stage = 1
-            trdar_cd = func_r.get("TRDAR_CD")
-            if trdar_cd is None:
-                continue
-            obj = Result.objects.create(
-                requests_id=obj.id,
-                signgu_code=str(signgu_code),
-                adstrd_cd=str(adstrd_cd),
-                trdar_cd=str(trdar_cd),
-                rank=rank,
-                rank_func=funcs,
-                stage=stage,
-            )
-            result_list.append(obj)
-
-    api_data = get_nemo_api(str(signgu_code), str(adstrd_cd))
-
-    return result_list, api_data
+    return result_list
 
 
 def read_big_file(file_path, adstrd_cd):
@@ -88,7 +51,132 @@ def read_big_file(file_path, adstrd_cd):
     return res_list
 
 
-def file_read(file_path, adstrd_cd):
+def show_middle_result(obj_id, year, quarter, signgu_code, raw_adstrd_cd):
+    average_rank = 0
+    total = 0
+    result_list = []
+    already_done = []
+    adstrd_cd = raw_adstrd_cd
+    for funcs in [1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 14, 15]:
+        file_name = f"{MEDIA_URL}{funcs}_{year}_{quarter}_report.json"
+        func_res = file_read(file_name, raw_adstrd_cd)
+
+        # 해당 라인의 값을 가져온다.
+        for fun_r in func_res:
+            try:
+                rank = fun_r.get(f"RANK{funcs}", -1)
+
+                if rank < 100 and rank != -1:
+                    stage = "⭐⭐⭐⭐⭐"
+                elif rank < 300:
+                    stage = "⭐⭐⭐⭐"
+                elif rank < 500:
+                    stage = "⭐⭐⭐"
+                elif rank < 700:
+                    stage = "⭐⭐"
+                else:
+                    stage = "⭐"
+
+                trdar_cd = fun_r.get("TRDAR_CD")
+
+                func_info = FUNC_INFOS[funcs]
+                func_name = func_info["name"]
+                if func_name not in already_done:
+                    already_done.append(func_name)
+                    func_url = func_info["url"]
+
+                    try:
+                        adstrd_cd_name = INVERSE_CONVERT_HJD[adstrd_cd]  # 11680545
+                        adstrd_cd = find_f_code(adstrd_cd_name)  # 11680110
+
+                    except:
+                        adstrd_cd_name = find_f_n_code(signgu_code, adstrd_cd)
+
+                    if adstrd_cd is None:
+                        continue
+
+                    print(func_name)
+                    print(adstrd_cd_name)
+                    print()
+
+                    obj = Result.objects.create(
+                        requests_id=obj_id,
+                        signgu_code=SEOUL_MUNICIPALITY_CODE[signgu_code],
+                        adstrd_cd=adstrd_cd_name,
+                        trdar_cd=CONVERT_CODE.get(signgu_code, {}).get(adstrd_cd, {}).get(trdar_cd, "상권이 아닙니다"),
+                        rank=rank,
+                        func_name=func_name,
+                        func_url=func_url,
+                        stage=stage,
+                    )
+
+                    if rank != -1:
+                        average_rank += rank
+                    total += 1
+                    result_list.append(obj)
+            except:
+                continue
+
+    rank = 0
+    if total != 0:
+        rank = int(average_rank // total)
+
+    return result_list, rank
+
+
+def find_f_code(name):
+    for v in CODE.values():
+        for k2, v2 in v.items():
+            if v2 == name:
+                return k2
+
+
+def find_f_n_code(sg, code):
+    for k, v in CODE[sg].items():
+        if k == code:
+            return v
+
+
+def show_result(obj, nearby=False):
+    year = obj.year
+    quarter = obj.quarter
+    signgu_code = str(obj.signgu_code)  #
+    f_adstrd_cd = str(obj.adstrd_cd)
+
+    adstrd_cd_name = CODE.get(signgu_code, {}).get(f_adstrd_cd)
+    adstrd_cd = CONVERT_HJD.get(adstrd_cd_name)  #  11500620
+    result_list = []
+    api_data = []
+    rank = 0
+    # show_big_result(year, quarter, signgu_code, adstrd_cd)
+
+    if not nearby:
+        api_data = get_nemo_api(signgu_code, f_adstrd_cd)
+        result_list, rank = show_middle_result(obj.id, year, quarter, signgu_code, adstrd_cd)
+    else:
+        nearby_sigs = NEARBY[signgu_code]
+        nearby_rank = 0
+        nearby_total = 0
+
+        for sg in nearby_sigs:
+            sg_str = str(sg)
+            for ad_name in list(CODE.get(sg_str, {}).values()):
+
+                ad = CONVERT_HJD.get(ad_name)
+                if ad is None:
+                    continue
+
+                res, rank = show_middle_result(obj.id, year, quarter, sg_str, ad)
+                result_list.extend(res)
+                nearby_rank += rank
+                nearby_total += len(res)
+        if nearby_total != 0:
+            rank = int(nearby_rank // nearby_total)
+
+    return result_list, rank, api_data
+
+
+def file_read(file_path, adstrd_cd: str) -> list():
     if not os.path.exists(file_path):
         return []
 
@@ -133,7 +221,7 @@ def get_nemo_api(municipality_code, adstrd_cd):
 
                 res_list.extend(res)
 
-                if page_idx == 5:
+                if len(res_list) > 5:
                     break
                 page_idx += 1
     return res_list
@@ -243,4 +331,7 @@ def get_product(region, lng, lat, page=0, zoom=15):
     except Exception as e:
         print(e.__str__())
         return False
+
+    if len(data) > 5:
+        data = data[:4]
     return data

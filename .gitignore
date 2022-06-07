@@ -135,4 +135,3 @@ dmypy.json
 
 *.json
 django/my_secrets.py
-spark/utils/my_secret.py

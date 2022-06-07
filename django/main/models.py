@@ -24,9 +24,10 @@ class Result(models.Model):
     trdar_cd = models.CharField(max_length=200, null=True)  # 파일 이름
     signgu_code = models.CharField(max_length=200, null=True)  # 파일 이름
     adstrd_cd = models.CharField(max_length=200, null=True)  # 파일 이름
-    rank = models.PositiveIntegerField(null=True)  # 순위
-    rank_func = models.PositiveIntegerField(null=True)  # 순위
-    stage = models.PositiveIntegerField(null=True)  # 단계
+    rank = models.CharField(max_length=200, null=True)
+    func_name = models.CharField(max_length=200, null=True)
+    func_url = models.CharField(max_length=200, null=True)
+    stage = models.CharField(max_length=200, null=True)
 
     def __str__(self):
         return str(self.id)

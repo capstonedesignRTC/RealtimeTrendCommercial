@@ -8,32 +8,63 @@
 
 <body>
 
+    <div>
+        <div style="margin-top: 1em;">
+            <a href="/">
+                <input type="button" style="text-align:right;font-size:1em;" value="홈으로 돌아가기">
+            </a>
+        </div>
+        <div style="text-align: center;">
+            {% for s in sig %}
+            <h1 style="text-align: center; margin-top: 3em; ">서울특별시 {{ s }}</h1>
+            {% endfor %}
+            <p style="margin-bottom: 0.5em">
+                {% for a in ads %}
+            <h2 style="text-align: center; margin-top: 1em"> {{ a }} 데이터 살펴보기</h2>
+            {% endfor %}
 
-    <div style="text-align: right;margin-top: 1em;">
-        <a href="/">
-            <input type="button" style="text-align: right;font-size:1em;" value="홈으로 돌아가기">
-        </a>
+            {% for y in year %}
+            {{y}} 년도
+            {% endfor %}
+            {% for q in quarter %}
+            {{q}} 분기 기준
+            {% endfor %}
+            </p>
+        </div>
     </div>
-    {% for s in sig %}
-    <h1 style="text-align: center; margin-top: 3em; ">서울특별시 {{ s }}</h1>
-    {% endfor %}
-    {% for a in ads %}
-    <h2 style="text-align: center; margin-top: 1em; "> {{ a }} 데이터 살펴보기</h2>
-    {% endfor %}
 
+    {% if rank %}
+    <div style="margin-top: 1em;text-align: center;">
+        {% for r in rank %}
+        {% if r != 0 %}
+        최종 순위 : {{r}} 등</br>
+        {% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
 
-    </h1>
     {% block content %}
+    {% if results%}
+
+    <div style="text-align: center;">
+        📢 {{results.0.signgu_code}} {{results.0.adstrd_cd}} 은(는)
+        {% if results.0.trdar_cd == '상권이 아닙니다'%}
+        지정 상권은 아닙니다.</br>
+        {% else %}
+        {{results.0.trdar_cd}} 입니다.</br>
+        {% endif %}
+    </div>
+
     {% for result in results %}
-    <div class="results" style="text-align: center;margin-bottom: 2em;">
-        <div class="result" style="text-align: center;">
+    <div style="text-align: center;margin-bottom: 2em;margin-top: 3em;">
+        <div style="text-align:center;">
             <div>
-                서울특별시 모든 행정동을 기준으로
                 <p>
-                    📢 {{result.rank}} 등
+                    ✨ {{result.adstrd_cd}}은(는) <a href="{{result.func_url}}"> {{ result.func_name}} </a>에서</br>
+                    총 1767개의 상권 영역에서 {{result.rank}}등을 차지했습니다.
                 </p>
                 <p>
-                    ✨ {{result.stage}} stage
+                    ✨ 따라서 별점은 5점 만점에 {{result.stage}}점을 받았습니다.
                 </p>
             </div>
             <div>
@@ -43,9 +74,57 @@
     </div>
     {% endfor %}
 
-    <h3 style="text-align: center;margin-bottom: 2em">🔎 관련 매물 살펴보기 🔎</h3>
+    {% if nearbys %}
+    <div style="text-align: center;">
+        <hr style="border: solid 5px rgb(0, 0, 0);">
+        <h2>근처 정보 확인하기</h2>
+        {% for r in rank_neary %}
+        {% if r != 0 %}
+        근처 지역의 최종 순위 : {{r}} 등</br>
+        {% endif %}
+        {% endfor %}
+    </div>
+
+
+    {% endif %}
+
+    {% for nearby in nearbys %}
+    <div class=" results" style="text-align: center;margin-bottom: 2em;">
+        <div class="result" style="text-align: center;">
+            <div>
+                <p>
+                    ✨ {{nearby.signgu_code}} {{nearby.adstrd_cd}}은(는) <a href="{{nearby.func_url}}">
+                        {{nearby.func_name}} </a>에서</br>
+                    총 1767개의 상권 영역에서 {{nearby.rank}}등을 차지했습니다.
+                </p>
+                <p>
+                    ✨ 따라서 별점은 5점 만점에 {{nearby.stage}}점을 받았습니다.
+                </p>
+            </div>
+            <div>
+                ---------------------------------------
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+
+    {% else %}
+    <div class="results" style="text-align: center;margin-bottom: 2em;">
+        <div class="result" style="text-align:center;">
+            <div>
+                <h2>제공되는 데이터가 없습니다.</h2>
+                <p>
+                    다른 지역을 둘러보세요!
+                </p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <hr style="border: solid 5px rgb(0, 0, 0);">
+    <h3 style="text-align: center;margin-top : 3em;margin-bottom: 2em">🔎 지역 매물 살펴보기 🔎</h3>
     {% for nemo in nemos %}
-    <div class="container" style="display: flex; margin: auto; margin-bottom: 3em; margin-left: 26%;">
+    <div class="container" style="display: flex; margin: auto; margin-bottom: 3em; margin-left: 23%;">
         <div>
             <img src="{{ nemo.smallPhotoUrls.0 }}" style="width:300px; height:300px;" />
         </div>

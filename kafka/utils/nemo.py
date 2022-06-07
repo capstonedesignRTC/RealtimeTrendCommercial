@@ -2,8 +2,6 @@ import logging
 
 import requests
 
-response = requests.get("https://www.nemoapp.kr/api/region/submunicipalities/{}")
-
 
 def get_submunicipality_code(municipality_code):
     """

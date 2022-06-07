@@ -5,6 +5,7 @@ dt_kst = datetime.datetime.utcnow() + datetime.timedelta(hours=9)
 YEAR = dt_kst.year
 
 TOPIC_NAME = "RTC_DATA"
+BUCKET_NAME = "rtc-raw-data"
 
 DEFAULT_HEADERS = {"Content-Type": "application/json; charset=utf-8"}
 
@@ -106,6 +107,7 @@ SEOUL_DATA_API_KEYS = {
     18: "bigCmpBjdongMgmInfo",
 }
 
+# 상업 분류 참고
 
 """
 LARGEUPJONG = [

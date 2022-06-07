@@ -1,4 +1,5 @@
 git clone -b feature/kafka --single-branch https://github.com/capstonedesignRTC/RealtimeTrendCommercial
+(브랜치 명에 맞게 수정 필요)
 
 docker compose -f "docker-compose.yml" up -d --build 
 

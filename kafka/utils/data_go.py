@@ -3,8 +3,8 @@ import logging
 
 import requests
 
-from secret import DATA_GO_KR_DE, DATA_GO_KR_EN
-from utils import DATA_GO_KR_API_KEYS
+from utils.secret import DATA_GO_KR_DE, DATA_GO_KR_EN
+from utils.utils import DATA_GO_KR_API_KEYS
 
 DATA_GOV_URL = "https://api.odcloud.kr/api/{}"
 
@@ -39,9 +39,6 @@ def one_get_odcloud_gov_data(service_key, page, size, type="json", sub_params={}
         params.update({**sub_params})
     else:
         params.update({"page": page, "perPage": size})
-
-    # if type == "XML":
-    #     params.update({"returnType": type, "type": type})
 
     res = requests.get(url=req_url, params=params, headers=headers)
     try:

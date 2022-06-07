@@ -3,10 +3,11 @@ import logging
 
 import requests
 
-from secret import DATA_SEOUL_API_KEY
-from utils import DEFAULT_HEADERS
+from utils.secret import DATA_SEOUL_API_KEY
+from utils.utils import DEFAULT_HEADERS
 
 SEOUL_URL = "http://openAPI.seoul.go.kr:8088/{}/{}/{}/{}/{}"
+
 CHUNK_SIZE = 900
 
 
@@ -22,7 +23,10 @@ def get_all_seoul_data(key, service_key, year):
                 )
         else:
             yield get_openapi_seoul_data(
-                service_key=service_key, start=start, end=start + limit, year=year,
+                service_key=service_key,
+                start=start,
+                end=start + limit,
+                year=year,
             )
         start += limit
 

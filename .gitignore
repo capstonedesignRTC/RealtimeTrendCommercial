@@ -1,8 +1,4 @@
-api_data
 spark/utils/my_secret.py
-spark/.vscode
-
-
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -134,9 +130,4 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
-spark/utils/my_secret.py
-*.crc
-spark/Results/1_2018_1_report/_SUCCESS
-*.csv
-spark/Results/2018_1_report/_SUCCESS
-spark/Results/2_2018_1_report/_SUCCESS
+

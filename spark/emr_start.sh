@@ -2,7 +2,7 @@ sudo sudo yum update -y
 
 sudo yum install git-core -y
 
-git clone -b feature/spark --single-branch https://github.com/capstonedesignRTC/RealtimeTrendCommercial.git
+git clone -b develop --single-branch https://github.com/capstonedesignRTC/RealtimeTrendCommercial.git
 
 cd RealtimeTrendCommercial/spark/utils
 
@@ -14,7 +14,7 @@ echo profile_info = {\
     \"aws_bucket_name\": \"\" ,\  
     } >> my_secret.py 
 
-cat my_secret.py
+cat RealtimeTrendCommercial/spark/utils/my_secret.py
 
 cd ../
 

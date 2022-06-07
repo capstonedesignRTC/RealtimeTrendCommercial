@@ -1,0 +1,42 @@
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
+
+    <title>RealtimeTrendCommercial</title>
+</head>
+
+<body>
+    <div style="text-align: center; margin-top: 3em; font-size:2em; ">
+
+        <body>로딩 중....⌛
+        </body>
+    </div>
+    <div style=" text-align: center; margin-top: 10em">
+
+        <body>잠시 후 결과 페이지로 이동합니다.</body>
+    </div>
+</body>
+
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        var xmlHttp = new XMLHttpRequest();
+        var link = `${window.location.origin}/processing`;
+        xmlHttp.open("GET", link, false);
+        xmlHttp.send(null);
+        var finish = JSON.parse(xmlHttp.responseText);
+
+        alert("데이터 처리 중 입니다.");
+        setTimeout(function () {
+            window.location.href = `${window.location.origin}/result/${finish.code}`;
+        })
+    })
+
+</script>
+
+</html>

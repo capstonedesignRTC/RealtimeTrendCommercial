@@ -6,7 +6,6 @@ git clone -b feature/spark --single-branch https://github.com/capstonedesignRTC/
 
 cd RealtimeTrendCommercial/spark/utils
 
-touch my_secret.py
 
 echo profile_info = {\ 	
     \"aws_access_key_id\": \"\" ,\

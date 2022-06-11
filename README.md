@@ -1,12 +1,16 @@
 # RealtimeTrendCommercial
 Real-time Trend Commercial Analysis - 2022년 1학기 캡스톤디자인1 프로젝트
 
+### Introduction
+As a service for **prospective entrepreneurs**, it is a service that informs which business is suitable for a certain location before starting a business. It collects and refines a large amount of information required from various open API sites, and the information comes out when the user selects a location.
+
 ### 구성원
 
 이름 | 학과 |  학번  | 이메일
 ------------ | -------------  | ------------- | -------------  
 이창렬 | 컴퓨터공학과 | 2019110634 | lclgood@khu.ac.kr
 허인경 | 컴퓨터공학과 | 2019102241 |  red131729@khu.ac.kr
+
 
 ### 프로젝트 소개
 
@@ -17,3 +21,8 @@ Real-time Trend Commercial Analysis - 2022년 1학기 캡스톤디자인1 프로
 3. 분석 레포트는 매일 갱신된다.
 4. 사용자는 시각화 툴을 통해 빅데이터를 통해 얻고 싶은 정보를 획득한다.
 
+### Development Environment
+- Apache Kafka
+- Apache Spark
+- Django
+- AWS S3

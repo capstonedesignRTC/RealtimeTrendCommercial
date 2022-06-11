@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>RealtimeTrendCommercial</title>
+</head>
+
+<body>
+    <style>
+        .centeringContainer {
+            text-align: center;
+        }
+
+        .centered {
+            display: table;
+            margin-left: auto;
+            margin-top: 5%;
+            margin-bottom: 2em;
+            margin-right: auto;
+            display: inline-block;
+        }
+    </style>
+
+    <div class="centeringContainer">
+        <span class="centered">
+            <span class="title" style="display:block;font-size:4em; color: green;">
+                Real-time Trend</br>Commercial Anaylsis</br>
+            </span>
+            <span class="subtitle" style="display:block;font-size:1.5em;margin-top: 2%;">
+                빠르게 상권분석 데이터를 살펴보세요!
+            </span>
+        </span>
+    </div>
+    <div style="margin-right: 3%;">
+        <style>
+            div {
+                text-align: right;
+                margin-right: 2em;
+            }
+        </style>
+        <div>
+            <span class="title" style="display:block;font-size:1.5em;margin-bottom: 1em">
+                2022년도 캡스톤디자인1 - RTC팀</span>
+        </div>
+        <div class="names"> 소프트웨어융합대학 컴퓨터공학과 2019102241 허인경 </div>
+        <div class="names"> 소프트웨어융합대학 컴퓨터공학과 2019110634 이창렬 </div>
+    </div>
+</body>
+
+<body>
+    <div style="text-align: center;margin-top: 4em;">
+        <a href="/code">
+            <input type="button" style="text-align: center;font-size:1.5em;" value="시작하기">
+        </a>
+    </div>
+</body>
+
+<body>
+    <div style="text-align: center;margin-top: 2em;">
+        <input type="button" style="text-align: center;font-size:1.5em;" value="데이터 최신화하기" onclick="get_fresh_data()">
+
+    </div>
+</body>
+
+
+<script type="text/javascript">
+    function get_fresh_data() {
+        var xmlHttp = new XMLHttpRequest();
+        var link = `${window.location.origin}/refresh`;
+
+        xmlHttp.open("GET", link, false);
+        xmlHttp.send(null);
+
+        alert('kafka에게 요청이 전달되었습니다!');
+    } </script>
+
+</html>

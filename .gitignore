@@ -1,7 +1,12 @@
+spark/*
+capd1/my_secrets.py
+capd1/.venv
+capd1/media
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
+
 
 # C extensions
 *.so
@@ -127,3 +132,7 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+*.json
+django/my_secrets.py
+spark/utils/my_secret.py

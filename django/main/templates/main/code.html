@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>RealtimeTrendCommercial</title>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
+</head>
+
+<body>
+    <h1 style="text-align: center; margin-top: 3em; margin-bottom:2em;">확인하고 싶은 데이터를 선택하세요!</h1>
+</body>
+
+<body>
+    <form method="GET" action="/loading/" style="text-align: center; margin-top: 5%;" id="myRequest">
+        <div>
+
+            <body>📌 확인하고 싶은 시군구를 선택하세요</body>
+            <select name="signgu_code" id="signgu_code" style="margin-left : 3em;margin-bottom: 2em;" form="myRequest"
+                onchange="get_sub_code(this.value)">
+                <option value=0 selected>선택하세요</option>
+                <option value=11680>강남구</option>
+                <option value=11740>강동구</option>
+                <option value=11305>강북구</option>
+                <option value=11500>강서구</option>
+                <option value=11620>관악구</option>
+                <option value=11215>광진구</option>
+                <option value=11530>구로구</option>
+                <option value=11545>금천구</option>
+                <option value=11350>노원구</option>
+                <option value=11320>도봉구</option>
+                <option value=11230>동대문구</option>
+                <option value=11590>동작구</option>
+                <option value=11440>마포구</option>
+                <option value=11410>서대문구</option>
+                <option value=11650>서초구</option>
+                <option value=11200>성동구</option>
+                <option value=11290>성북구</option>
+                <option value=11710>송파구</option>
+                <option value=11470>양천구</option>
+                <option value=11560>영등포구</option>
+                <option value=11170>용산구</option>
+                <option value=11380>은평구</option>
+                <option value=11110>종로구</option>
+                <option value=11140>중구</option>
+                <option value=11260>중랑구</option>
+            </select>
+        </div>
+        <div>
+
+            <body>📌 확인하고 싶은 행정동을 선택하세요 </body>
+            <select name="adstrd_cd" id="adstrd_cd" style="margin-left : 3em;margin-bottom: 2em" form="myRequest">
+                <option value=0 selected>선택하세요</option>
+                <option value=0 selected>선택하세요</option>
+            </select>
+            <!-- 
+            <input type='number' id="adstrd_cd" name="adstrd_cd" style="margin-left : 3em;;margin-bottom: 2em"> -->
+
+
+        </div>
+
+        </div>
+        <div>
+
+            <body>📌 확인하고 싶은 년도를 선택하세요 </body>
+            <select name="year" id="year" style="margin-left : 3em;margin-bottom: 2em" form="myRequest">
+                <option value=0 selected>선택하세요</option>
+                <option value=2018>2018년</option>
+                <option value=2019>2019년</option>
+                <option value=2020>2020년</option>
+                <option value=2021>2021년</option>
+                <option value=2022>2022년</option>
+            </select>
+        </div>
+        <div>
+
+            <body>📌 확인하고 싶은 분기를 선택하세요 </body>
+            <select name="quarter" id="quarter" style="margin-left : 3em;margin-bottom: 2em" form="myRequest">
+                <option value=0 selected>선택하세요</option>
+                <option value=1>1분기</option>
+                <option value=2>2분기</option>
+                <option value=3>3분기</option>
+                <option value=4>4분기</option>
+            </select>
+        </div>
+
+        <div style="text-align: center;margin-top: 4em;">
+            <button type="submit" style="text-align: center;font-size:1.5em;">
+                결과 확인하기</button>
+        </div>
+        </a>
+    </form>
+
+</body>
+
+<script type="text/javascript">
+    function get_sub_code(code) {
+        var xmlHttp = new XMLHttpRequest();
+        var link = `https://www.nemoapp.kr/api/region/submunicipalities/${code}`;
+        var target = document.getElementById("adstrd_cd");
+        target.options.length = 1;
+
+        xmlHttp.open("GET", link, false);
+        xmlHttp.send(null);
+        var json_list = JSON.parse(xmlHttp.responseText);
+
+        for (var i = 0; i < json_list.length; i++) {
+            var opt = document.createElement("option");
+            opt.value = parseInt(json_list[i].code);
+            opt.innerHTML = json_list[i].name;
+            console.log(opt.value);
+            target.appendChild(opt);
+        }
+    } </script>
+
+</html>

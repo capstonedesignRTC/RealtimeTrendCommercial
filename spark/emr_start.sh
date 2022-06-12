@@ -2,10 +2,11 @@ sudo sudo yum update -y
 
 sudo yum install git-core -y
 
-git clone  https://github.com/capstonedesignRTC/RealtimeTrendCommercial.git
+git clone https://github.com/capstonedesignRTC/RealtimeTrendCommercial.git
 
 cd RealtimeTrendCommercial/spark/utils
 
+touch my_secret.py
 
 echo profile_info = {\ 	
     \"aws_access_key_id\": \"\" ,\

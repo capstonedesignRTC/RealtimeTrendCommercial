@@ -28,9 +28,11 @@ class SparkS3(object):
     conf.set("spark.executor.instances", "8")
     conf.set("spark.executor.cores", "4")
 
+    conf.set("spark.jars", "/opt/spark/spark-3.1.3-bin-hadoop3.2/jars/hadoop-aws-3.2.3.jar")
+    # conf.set("spark.jars", "/opt/spark/jars/hadoop-aws-3.2.3.jar")
+
     conf.set("spark.shuffle.compress", "true")
     conf.set("spark.io.compress.codec", "org.apache.spark.io.LZFCompressionCodec")
-
     conf.set("spark.dynamicAllocation.enabled", "true")
 
     conf.set("spark.hadoop.fs.s3a.access.key", profile_info["aws_access_key_id"])
@@ -64,25 +66,24 @@ class SparkS3(object):
         self.spark.stop()
 
     def send_file(self, save_df_result: DataFrame, key: str):
-        pass
-        # if not os.path.exists("Results"):
-        #     os.mkdir("Results")
+        if not os.path.exists("Results"):
+            os.mkdir("Results")
 
-        # try:
-        #     # s3에 정제된 json 파일로 올리기
-        #     df = save_df_result.toJSON().map(lambda x: json.loads(x)).collect()  # .repartition(1)
-        #     self.s3_client.put_object(
-        #         Body=json.dumps(df), Bucket=self.send_bucket, Key=key,
-        #     )
-        # except Exception as e:
-        #     print(e.__str__())
-        # try:
-        #     save_df_result.write.format("org.apache.spark.sql.json").mode("append").save(
-        #         f"s3://{self.send_bucket}/{key}"
-        #     )
-        #     save_df_result.write.format("json").save(f"s3://{self.send_bucket}/f_{key}")
-        # except Exception as e:
-        #     print(e.__str__())
+        try:
+            # s3에 정제된 json 파일로 올리기
+            df = save_df_result.toJSON().map(lambda x: json.loads(x)).collect()  # .repartition(1)
+            self.s3_client.put_object(
+                Body=json.dumps(df), Bucket=self.send_bucket, Key=f"test/{key}",
+            )
+        except Exception as e:
+            print(e.__str__())
+        try:
+            save_df_result.write.format("org.apache.spark.sql.json").mode("append").save(
+                f"s3://{self.send_bucket}/test/{key}"
+            )
+            save_df_result.write.format("json").save(f"s3://{self.send_bucket}/test/f_{key}")
+        except Exception as e:
+            print(e.__str__())
 
     def get_file(self, file_name="convert_code.csv") -> DataFrame:
         try:

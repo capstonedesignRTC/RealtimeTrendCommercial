@@ -2,7 +2,7 @@ sudo sudo yum update -y
 
 sudo yum install git-core -y
 
-git clone -b develop --single-branch https://github.com/capstonedesignRTC/RealtimeTrendCommercial.git
+git clone  https://github.com/capstonedesignRTC/RealtimeTrendCommercial.git
 
 cd RealtimeTrendCommercial/spark/utils
 

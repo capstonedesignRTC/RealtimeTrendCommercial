@@ -20,7 +20,7 @@ As a service for **prospective entrepreneurs**, it is a service that informs whi
 ### 🔎 프로젝트 구조도
 프로젝트 구조도를 간단하게 묘사하면 다음 사진과 같다.
 <p align="center">
-    <img src="images/simple_diagram.jpg"/>
+    <img src="images/diagram.jpg"/>
 </p>
 
 ### 🗃️ Development Environment
@@ -29,6 +29,10 @@ As a service for **prospective entrepreneurs**, it is a service that informs whi
 - Django
 - AWS S3
 
+
+
+## 🖼️ 시연 화면
+
 ### ⛓️ 프로젝트 흐름
 
 1. 스케쥴러가 Kafka를 실행시켜 주기적으로 데이터를 수집한다. 이 데이터들은 데이터가 사용 준비 상태가 될 때까지 원시 상태로 보관된다.
@@ -36,7 +40,8 @@ As a service for **prospective entrepreneurs**, it is a service that informs whi
 3. 분석 레포트는 매일 갱신된다.
 4. 사용자는 Django을 통해 얻고 싶은 정보를 획득한다.
 
-## 🖼️ 시연 화면
+
+### 🗺️ 결과
 
 첫 화면에는 시작할 수 있는 버튼과 데이터를 최신화할 수 있는 버튼이 있다. 데이터 최신화하기 버튼을 클릭하면 API를 호출하여 새로운 데이터를 가져오는 과정을 시작한다.
 <p align="center">
@@ -64,3 +69,11 @@ As a service for **prospective entrepreneurs**, it is a service that informs whi
     <img src="images/result_6.png" width="80%" height="80%"/>
 </p>
 
+상권 매물 정보로는 다음을 확인할 수 있다.
+
+- 매물 사진
+- 매물 크기
+- 상세 위치
+- 관리비 및 가격
+- 매물 과거 기록에 따른 추천 건물 용도
+- 정보 업데이트 시기
